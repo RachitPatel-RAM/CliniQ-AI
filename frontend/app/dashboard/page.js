@@ -1,18 +1,22 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
-import { subscribeToIntakes } from '@/lib/firebase';
+import { subscribeToIntakes, confirmIntakeReport } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Search, Plus, AlertTriangle, Clock, Users, Filter } from 'lucide-react';
+import { Activity, Search, Plus, AlertTriangle, Clock, Users, X, FileText, CheckCircle, Download, ExternalLink, User, Globe, Stethoscope, Heart, Pill } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 export default function DashboardPage() {
-    const router = useRouter();
     const [intakes, setIntakes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
+    const [selectedRecord, setSelectedRecord] = useState(null);
+    const [downloadingPdf, setDownloadingPdf] = useState(false);
+    const modalReportRef = useRef(null);
 
     useEffect(() => {
         const unsub = subscribeToIntakes((records) => {
@@ -34,6 +38,33 @@ export default function DashboardPage() {
         pending: intakes.filter(r => r.status !== 'Confirmed').length,
     };
 
+    const handleDownloadPdf = async () => {
+        if (!modalReportRef.current || !selectedRecord) return;
+        setDownloadingPdf(true);
+        try {
+            const canvas = await html2canvas(modalReportRef.current, { scale: 2, useCORS: true });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`CliniQ_Report_${selectedRecord.patient?.name || 'Patient'}_${selectedRecord.id?.slice(-6) || 'Doc'}.pdf`);
+        } catch (err) {
+            console.error('PDF Generation Error:', err);
+        } finally {
+            setDownloadingPdf(false);
+        }
+    };
+
+    const handleToggleStatus = async (record) => {
+        try {
+            await confirmIntakeReport(record.id);
+            setSelectedRecord(prev => prev ? { ...prev, status: 'Confirmed' } : null);
+        } catch (err) {
+            console.error('Failed to update status:', err);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-surface">
             <Navbar />
@@ -41,8 +72,8 @@ export default function DashboardPage() {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-text-primary mb-1">Clinical Intake Queue</h1>
-                        <p className="text-sm text-text-secondary">Real-time patient intake reports synced with Firebase.</p>
+                        <h1 className="text-3xl font-extrabold text-text-primary mb-1">Doctor Dashboard</h1>
+                        <p className="text-sm text-text-secondary">Real-time patient intake queue synced with Firebase RTDB.</p>
                     </div>
                     <Link href="/select-language" className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-md shadow-primary/20 transition-all hover:shadow-glow-blue">
                         <Plus className="w-4 h-4" /> New Patient Intake
@@ -64,7 +95,7 @@ export default function DashboardPage() {
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search by patient name or complaint..."
+                            placeholder="Search patient name or symptoms..."
                             className="w-full pl-11 pr-4 py-3 rounded-xl border border-border-default bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                         />
                     </div>
@@ -85,18 +116,18 @@ export default function DashboardPage() {
                 {/* Table */}
                 <div className="bg-white rounded-2xl border border-border-default shadow-card overflow-hidden">
                     <div className="px-6 py-4 border-b border-border-default/60 flex justify-between items-center">
-                        <h3 className="font-bold text-sm text-text-primary">Intake Records</h3>
+                        <h3 className="font-bold text-sm text-text-primary">Clinical Intake Queue</h3>
                         <span className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
-                            Live Sync
+                            Live Sync Active
                         </span>
                     </div>
 
                     {loading ? (
-                        <div className="p-12 text-center text-text-muted text-sm">Loading intake records...</div>
+                        <div className="p-12 text-center text-text-muted text-sm">Loading patient queue...</div>
                     ) : filtered.length === 0 ? (
                         <div className="p-12 text-center text-text-muted text-sm">
-                            {intakes.length === 0 ? 'No intake records yet. Click "New Patient Intake" to start.' : 'No records match your search/filter.'}
+                            {intakes.length === 0 ? 'No patient intakes yet.' : 'No records match search/filter.'}
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
@@ -109,6 +140,7 @@ export default function DashboardPage() {
                                         <th className="p-4">Priority</th>
                                         <th className="p-4">Status</th>
                                         <th className="p-4">Time</th>
+                                        <th className="p-4 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border-default/40">
@@ -118,11 +150,16 @@ export default function DashboardPage() {
                                                 key={record.id}
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
-                                                className="hover:bg-surface/70 transition-colors cursor-default"
+                                                onClick={() => setSelectedRecord(record)}
+                                                className="hover:bg-surface/80 transition-colors cursor-pointer"
                                             >
-                                                <td className="p-4 font-bold text-text-primary">{record.patient?.name || 'Unknown'}</td>
+                                                <td className="p-4 font-bold text-text-primary flex items-center gap-2">
+                                                    <User className="w-4 h-4 text-primary shrink-0" />
+                                                    <span>{record.patient?.name || 'Unknown'}</span>
+                                                    <span className="text-[10px] text-text-muted">({record.patient?.age || '—'} yrs, {record.patient?.gender || '—'})</span>
+                                                </td>
                                                 <td className="p-4 text-primary font-semibold">{record.language || '—'}</td>
-                                                <td className="p-4 text-text-secondary truncate max-w-[250px]">{record.aiResult?.chief_complaint || record.transcript?.slice(0, 60) || '—'}</td>
+                                                <td className="p-4 text-text-secondary truncate max-w-[240px]">{record.aiResult?.chief_complaint || record.transcript?.slice(0, 50) || '—'}</td>
                                                 <td className="p-4">
                                                     {record.aiResult?.emergency?.flag ? (
                                                         <span className="px-3 py-1 bg-emergency-bg text-emergency border border-emergency-border rounded-full font-bold text-[10px] uppercase">Critical</span>
@@ -135,7 +172,12 @@ export default function DashboardPage() {
                                                         {record.status || 'Pending'}
                                                     </span>
                                                 </td>
-                                                <td className="p-4 text-text-muted font-mono">{record.createdAt ? new Date(record.createdAt).toLocaleString() : '—'}</td>
+                                                <td className="p-4 text-text-muted font-mono">{record.createdAt ? new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                                                <td className="p-4 text-right">
+                                                    <button onClick={(e) => { e.stopPropagation(); setSelectedRecord(record); }} className="px-3 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg font-bold text-[11px] transition-colors">
+                                                        View Report
+                                                    </button>
+                                                </td>
                                             </motion.tr>
                                         ))}
                                     </AnimatePresence>
@@ -144,6 +186,116 @@ export default function DashboardPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Patient Record Detail Modal */}
+                {selectedRecord && (
+                    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-border-default shadow-elevated p-6 sm:p-8 space-y-6 relative">
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between border-b border-border-default pb-4">
+                                <div>
+                                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Patient Clinical Intake Report</span>
+                                    <h2 className="text-2xl font-extrabold text-text-primary">{selectedRecord.patient?.name || 'Patient Report'}</h2>
+                                </div>
+                                <button onClick={() => setSelectedRecord(null)} className="p-2 rounded-xl hover:bg-surface text-text-muted hover:text-text-primary transition">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Report Canvas Content for PDF & Screen */}
+                            <div ref={modalReportRef} className="space-y-5 bg-white p-2">
+                                {/* Patient Header */}
+                                <div className="bg-surface rounded-2xl p-4 border border-border-default grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                                    <div>
+                                        <span className="text-text-muted block text-[10px] uppercase font-bold">Age &amp; Gender</span>
+                                        <span className="font-bold text-text-primary">{selectedRecord.patient?.age || '—'} Yrs, {selectedRecord.patient?.gender || '—'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-text-muted block text-[10px] uppercase font-bold">Language</span>
+                                        <span className="font-bold text-primary">{selectedRecord.language || '—'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-text-muted block text-[10px] uppercase font-bold">Status</span>
+                                        <span className="font-bold text-emerald-600">{selectedRecord.status || 'Pending Review'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-text-muted block text-[10px] uppercase font-bold">Intake Time</span>
+                                        <span className="font-mono">{selectedRecord.createdAt ? new Date(selectedRecord.createdAt).toLocaleString() : '—'}</span>
+                                    </div>
+                                </div>
+
+                                {/* Emergency Alert if Flagged */}
+                                {selectedRecord.aiResult?.emergency?.flag && (
+                                    <div className="bg-emergency-bg border-l-4 border-emergency p-4 rounded-xl text-xs space-y-1">
+                                        <div className="flex items-center gap-2 text-emergency font-extrabold uppercase">
+                                            <AlertTriangle className="w-4 h-4" /> Critical Emergency Warning Flagged
+                                        </div>
+                                        <p className="text-text-primary font-medium">{selectedRecord.aiResult?.emergency?.reasons?.join(', ')}</p>
+                                    </div>
+                                )}
+
+                                {/* Chief Complaint */}
+                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/20 space-y-1">
+                                    <span className="text-[10px] font-bold text-primary uppercase">Chief Complaint</span>
+                                    <p className="text-sm font-semibold text-text-primary">{selectedRecord.aiResult?.chief_complaint || '—'}</p>
+                                </div>
+
+                                {/* Symptoms */}
+                                <div className="p-4 bg-surface rounded-2xl border border-border-default space-y-2 text-xs">
+                                    <span className="text-[10px] font-bold text-text-muted uppercase">Extracted Symptoms</span>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedRecord.aiResult?.symptoms?.map((s, i) => (
+                                            <span key={i} className="px-3 py-1 bg-white border border-border-default rounded-lg font-semibold text-text-primary shadow-sm">
+                                                • {s}
+                                            </span>
+                                        )) || <p className="text-text-muted">None specified</p>}
+                                    </div>
+                                </div>
+
+                                {/* Doctor Summary */}
+                                <div className="p-4 bg-surface rounded-2xl border border-border-default space-y-1 text-xs">
+                                    <span className="text-[10px] font-bold text-text-muted uppercase">Doctor Summary</span>
+                                    <p className="text-text-primary leading-relaxed">{selectedRecord.aiResult?.doctor_summary || '—'}</p>
+                                </div>
+
+                                {/* Original Transcript */}
+                                <div className="p-4 bg-surface rounded-2xl border border-border-default space-y-1 text-xs">
+                                    <span className="text-[10px] font-bold text-text-muted uppercase">Original Patient Speech Narrative ({selectedRecord.language})</span>
+                                    <p className="text-text-secondary italic">&quot;{selectedRecord.transcript || 'No transcript recorded'}&quot;</p>
+                                </div>
+                            </div>
+
+                            {/* Modal Actions */}
+                            <div className="pt-4 border-t border-border-default flex flex-col sm:flex-row justify-between gap-3">
+                                <button
+                                    onClick={() => handleToggleStatus(selectedRecord)}
+                                    className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${
+                                        selectedRecord.status === 'Confirmed'
+                                            ? 'bg-emerald-100 text-emerald-800'
+                                            : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                                    }`}
+                                >
+                                    <CheckCircle className="w-4 h-4" />
+                                    {selectedRecord.status === 'Confirmed' ? 'Status: Confirmed' : 'Mark as Confirmed'}
+                                </button>
+
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={handleDownloadPdf}
+                                        disabled={downloadingPdf}
+                                        className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 shadow-md shadow-primary/20"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        {downloadingPdf ? 'Generating PDF...' : 'Download PDF Report'}
+                                    </button>
+                                    <button onClick={() => setSelectedRecord(null)} className="bg-surface hover:bg-border-default text-text-secondary px-5 py-2.5 rounded-xl font-bold text-xs transition-colors">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
             </main>
         </div>
     );

@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import PatientInfoCard from '@/components/PatientInfoCard';
@@ -9,74 +9,103 @@ import PdfDownloadButton from '@/components/PdfDownloadButton';
 import useIntakeStore from '@/hooks/useIntakeStore';
 import { saveIntakeReport } from '@/lib/firebase';
 import { motion } from 'framer-motion';
-import { CheckCircle, Stethoscope, Clock, Pill, Heart, AlertTriangle, HelpCircle, FileText, Loader2 } from 'lucide-react';
+import { CheckCircle, Stethoscope, Clock, Pill, Heart, AlertTriangle, HelpCircle, FileText, Loader2, Home, ArrowRight, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
 
 export default function IntakeReportPage() {
     const router = useRouter();
     const store = useIntakeStore();
-    const { patient, selectedLanguage, transcript, aiResult, setReportId } = store;
+    const { patient, selectedLanguage, transcript, aiResult, setReportId, reset } = store;
     const reportRef = useRef(null);
     const [saving, setSaving] = useState(false);
-    const [saved, setSaved] = useState(false);
-    const [autoSaved, setAutoSaved] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
         if (!aiResult) router.replace('/select-language');
     }, [aiResult, router]);
 
-    // Auto-save to Firebase as soon as the report loads
-    useEffect(() => {
-        if (!aiResult || !patient?.name || autoSaved) return;
-
-        const autoSave = async () => {
-            try {
-                console.log('[Firebase] Auto-saving intake report...');
-                const id = await saveIntakeReport({
-                    patient,
-                    language: selectedLanguage,
-                    transcript,
-                    aiResult,
-                });
-                setReportId(id);
-                setAutoSaved(true);
-                console.log('[Firebase] ✅ Auto-saved with ID:', id);
-            } catch (err) {
-                console.error('[Firebase] ❌ Auto-save failed:', err.message, err);
-            }
-        };
-
-        autoSave();
-    }, [aiResult, patient, selectedLanguage, transcript, autoSaved, setReportId]);
-
-    const handleConfirm = async () => {
+    // Save ONLY when user explicitly clicks "Confirm & Save Intake"
+    const handleConfirmAndSave = async () => {
         setSaving(true);
         try {
-            if (!autoSaved) {
-                // If auto-save didn't work, try saving now
-                const id = await saveIntakeReport({
-                    patient,
-                    language: selectedLanguage,
-                    transcript,
-                    aiResult,
-                });
-                setReportId(id);
-            }
-            // Mark as confirmed in Firebase
-            if (store.reportId) {
-                const { confirmIntakeReport } = await import('@/lib/firebase');
-                await confirmIntakeReport(store.reportId);
-            }
-            setSaved(true);
-            setTimeout(() => router.push('/dashboard'), 1200);
+            console.log('[Firebase] Saving intake report on user submit...');
+            const id = await saveIntakeReport({
+                patient,
+                language: selectedLanguage,
+                transcript,
+                aiResult,
+            });
+            setReportId(id);
+            setSubmitted(true);
         } catch (err) {
-            console.error('[Firebase] ❌ Confirm save error:', err.message, err);
-            alert('Failed to save: ' + err.message + '\n\nCheck browser console for details.');
+            console.error('[Firebase] ❌ Save failed:', err.message, err);
+            alert('Failed to submit report: ' + err.message);
             setSaving(false);
         }
     };
 
     if (!aiResult) return null;
     const ai = aiResult;
+
+    // Thank You Screen after manual submit
+    if (submitted) {
+        return (
+            <div className="min-h-screen flex flex-col bg-surface">
+                <Navbar />
+                <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-3xl border border-border-default p-8 sm:p-12 shadow-elevated max-w-xl w-full text-center space-y-6"
+                    >
+                        <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border-4 border-emerald-100 shadow-card">
+                            <CheckCircle className="w-10 h-10" />
+                        </div>
+
+                        <div className="space-y-2">
+                            <span className="px-3.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border border-emerald-200">
+                                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                                Report Submitted to Clinic
+                            </span>
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary">
+                                Thank You, {patient.name || 'Patient'}!
+                            </h1>
+                            <p className="text-sm text-text-secondary leading-relaxed max-w-md mx-auto">
+                                We have received your intake details. Your report has been dispatched to the attending doctor queue.
+                            </p>
+                        </div>
+
+                        <div className="bg-surface p-5 rounded-2xl border border-border-default/60 text-left space-y-2 text-xs">
+                            <div className="flex items-center justify-between font-bold text-text-primary">
+                                <span>Status: Submitted &amp; Pending Doctor Review</span>
+                                <span className="text-emerald-600">Synced</span>
+                            </div>
+                            <p className="text-text-muted leading-normal">
+                                The doctor will review your clinical summary and call or attend to you shortly. You do not need to take any further action.
+                            </p>
+                        </div>
+
+                        <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+                            <Link
+                                href="/"
+                                onClick={() => reset()}
+                                className="bg-primary hover:bg-primary-dark text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-primary/20"
+                            >
+                                <Home className="w-4 h-4" /> Return to Home
+                            </Link>
+                            <Link
+                                href="/select-language"
+                                onClick={() => reset()}
+                                className="bg-white border border-border-default text-text-primary hover:bg-surface px-6 py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+                            >
+                                Start New Intake <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+                    </motion.div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex flex-col bg-surface">
@@ -87,7 +116,7 @@ export default function IntakeReportPage() {
                     <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                            Step 4 of 4 — Clinical Report Ready
+                            Step 4 of 4 — Review Clinical Report
                         </span>
                         <span className="text-xs font-mono font-bold text-emerald-600">100%</span>
                     </div>
@@ -172,18 +201,18 @@ export default function IntakeReportPage() {
 
                         {/* Actions */}
                         <div className="bg-white rounded-2xl border border-border-default p-6 shadow-card space-y-4">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted">Actions</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted">Save &amp; Submit</h3>
 
                             <button
-                                onClick={handleConfirm}
-                                disabled={saving || saved}
-                                className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                                    saved ? 'bg-emerald-500 text-white' : 'bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25'
-                                } disabled:opacity-70`}
+                                onClick={handleConfirmAndSave}
+                                disabled={saving}
+                                className="w-full py-4 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                             >
-                                {saved ? (<><CheckCircle className="w-4 h-4" /> Saved to Dashboard</>) :
-                                 saving ? (<><Loader2 className="w-4 h-4 animate-spin" /> Saving...</>) :
-                                 (<><CheckCircle className="w-4 h-4" /> Confirm &amp; Save Intake</>)}
+                                {saving ? (
+                                    <><Loader2 className="w-4 h-4 animate-spin" /> Saving to Database...</>
+                                ) : (
+                                    <><CheckCircle className="w-4 h-4" /> Confirm &amp; Save Intake</>
+                                )}
                             </button>
 
                             <PdfDownloadButton reportRef={reportRef} patientName={patient.name} />
