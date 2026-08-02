@@ -159,7 +159,7 @@ export default function LandingPage() {
                             Healthcare for Every Regional Voice
                         </h2>
                         <p className="text-text-secondary text-sm sm:text-base leading-relaxed">
-                            India has many regional languages. People should be able to explain their health problems in the language they are most comfortable with — making healthcare more accessible and inclusive.
+                            India has many regional languages. People should be able to explain their health problems in the language they are most comfortable with -making healthcare more accessible and inclusive.
                         </p>
                     </motion.div>
 
@@ -252,7 +252,7 @@ export default function LandingPage() {
                         <Activity className="w-4 h-4 text-primary" />
                         CliniQ AI Clinical Intake Platform
                     </div>
-                    <div>Powered by Gemma AI &amp; Firebase Realtime Database</div>
+                    <div>Powered by Gemma AI</div>
                 </div>
             </footer>
         </div>
