@@ -5,11 +5,21 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { subscribeToIntakes, confirmIntakeReport } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Search, Plus, AlertTriangle, Clock, Users, X, FileText, CheckCircle, Download, ExternalLink, User, Globe, Stethoscope, Heart, Pill } from 'lucide-react';
+import {
+    Activity, Search, Plus, AlertTriangle, Clock, Users, X, FileText,
+    CheckCircle, Download, ExternalLink, User, Globe, Stethoscope, Heart, Pill,
+    Lock, LogOut, KeyRound, ShieldAlert, ArrowRight, ShieldCheck
+} from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 
 export default function DashboardPage() {
+    const router = useRouter();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [doctorIdInput, setDoctorIdInput] = useState('');
+    const [passwordInput, setPasswordInput] = useState('');
+    const [loginError, setLoginError] = useState('');
+
     const [intakes, setIntakes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -18,13 +28,41 @@ export default function DashboardPage() {
     const [downloadingPdf, setDownloadingPdf] = useState(false);
     const modalReportRef = useRef(null);
 
+    // Check login state on mount
     useEffect(() => {
+        const storedAuth = sessionStorage.getItem('cliniq_doctor_auth');
+        if (storedAuth === 'true') {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
+    // Subscribe to Firebase RTDB when authenticated
+    useEffect(() => {
+        if (!isAuthenticated) return;
         const unsub = subscribeToIntakes((records) => {
             setIntakes(records);
             setLoading(false);
         });
         return unsub;
-    }, []);
+    }, [isAuthenticated]);
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+        setLoginError('');
+        if (doctorIdInput.trim() === 'doctor' && passwordInput === '123456789') {
+            sessionStorage.setItem('cliniq_doctor_auth', 'true');
+            setIsAuthenticated(true);
+        } else {
+            setLoginError('Invalid Doctor ID or Password. (Use: ID="doctor", Password="123456789")');
+        }
+    };
+
+    const handleLogout = () => {
+        sessionStorage.removeItem('cliniq_doctor_auth');
+        setIsAuthenticated(false);
+        setDoctorIdInput('');
+        setPasswordInput('');
+    };
 
     const filtered = intakes.filter((r) => {
         const matchesSearch = !search || r.patient?.name?.toLowerCase().includes(search.toLowerCase()) || r.aiResult?.chief_complaint?.toLowerCase().includes(search.toLowerCase());
@@ -65,26 +103,115 @@ export default function DashboardPage() {
         }
     };
 
+    // Render Login Screen if not authenticated
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen flex flex-col bg-surface">
+                <Navbar />
+                <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white rounded-3xl border border-border-default p-8 sm:p-10 shadow-elevated max-w-md w-full space-y-6"
+                    >
+                        <div className="text-center space-y-2">
+                            <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto shadow-inner">
+                                <Lock className="w-7 h-7 text-primary" />
+                            </div>
+                            <h1 className="text-2xl font-extrabold text-text-primary">Doctor Portal Access</h1>
+                            <p className="text-xs text-text-secondary">Enter clinical credentials to access patient intake queue</p>
+                        </div>
+
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-text-primary uppercase tracking-wider">Doctor ID</label>
+                                <div className="relative">
+                                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                    <input
+                                        type="text"
+                                        required
+                                        value={doctorIdInput}
+                                        onChange={(e) => setDoctorIdInput(e.target.value)}
+                                        placeholder="Enter doctor ID (e.g. doctor)"
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-border-default bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-text-primary uppercase tracking-wider">Password</label>
+                                <div className="relative">
+                                    <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                    <input
+                                        type="password"
+                                        required
+                                        value={passwordInput}
+                                        onChange={(e) => setPasswordInput(e.target.value)}
+                                        placeholder="Enter password"
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-border-default bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            {loginError && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2">
+                                    <ShieldAlert className="w-4 h-4 shrink-0 text-red-600" />
+                                    <span>{loginError}</span>
+                                </motion.div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="w-full py-3.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-sm transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-2"
+                            >
+                                Login to Dashboard <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </form>
+
+                        <div className="p-4 bg-surface rounded-2xl border border-border-default/60 text-[11px] text-text-muted space-y-1">
+                            <span className="font-bold text-text-primary block">Default Demo Credentials:</span>
+                            <p>Doctor ID: <code className="bg-white px-1.5 py-0.5 rounded border border-border-default font-mono font-bold text-primary">doctor</code></p>
+                            <p>Password: <code className="bg-white px-1.5 py-0.5 rounded border border-border-default font-mono font-bold text-primary">123456789</code></p>
+                        </div>
+                    </motion.div>
+                </main>
+            </div>
+        );
+    }
+
+    // Authenticated Doctor Dashboard
     return (
         <div className="min-h-screen flex flex-col bg-surface">
             <Navbar />
             <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-border-default shadow-card">
                     <div>
-                        <h1 className="text-3xl font-extrabold text-text-primary mb-1">Doctor Dashboard</h1>
-                        <p className="text-sm text-text-secondary">Real-time patient intake queue synced with Firebase RTDB.</p>
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold inline-flex items-center gap-1.5">
+                                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                Doctor Access Verified
+                            </span>
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary">Clinical Intake Queue</h1>
+                        <p className="text-xs sm:text-sm text-text-secondary">Real-time patient intake reports synced with Firebase RTDB.</p>
                     </div>
-                    <Link href="/select-language" className="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-md shadow-primary/20 transition-all hover:shadow-glow-blue">
-                        <Plus className="w-4 h-4" /> New Patient Intake
-                    </Link>
+
+                    <div className="flex items-center gap-3">
+                        <Link href="/select-language" className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-md shadow-primary/20 transition-all">
+                            <Plus className="w-4 h-4" /> New Patient Intake
+                        </Link>
+                        <button onClick={handleLogout} className="bg-surface hover:bg-red-50 text-text-secondary hover:text-red-700 border border-border-default hover:border-red-200 px-4 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5">
+                            <LogOut className="w-4 h-4" /> Logout
+                        </button>
+                    </div>
                 </div>
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <StatCard icon={<Users className="w-5 h-5" />} label="Total Intakes" value={stats.total} color="text-primary bg-primary/10" />
-                    <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Emergency Flags" value={stats.emergency} color="text-emergency bg-emergency-bg" />
-                    <StatCard icon={<Clock className="w-5 h-5" />} label="Pending Review" value={stats.pending} color="text-amber-600 bg-warning-bg" />
+                    <StatCard icon={<AlertTriangle className="w-5 h-5" />} label="Emergency Flags" value={stats.emergency} color="text-red-600 bg-red-100" />
+                    <StatCard icon={<Clock className="w-5 h-5" />} label="Pending Review" value={stats.pending} color="text-amber-600 bg-amber-50" />
                 </div>
 
                 {/* Search + Filters */}
@@ -99,14 +226,14 @@ export default function DashboardPage() {
                             className="w-full pl-11 pr-4 py-3 rounded-xl border border-border-default bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                         />
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 overflow-x-auto pb-1">
                         {[
                             { key: 'all', label: 'All' },
-                            { key: 'emergency', label: 'Emergency' },
-                            { key: 'routine', label: 'Routine' },
+                            { key: 'emergency', label: 'Emergency (Red)' },
+                            { key: 'routine', label: 'Routine (Green)' },
                             { key: 'confirmed', label: 'Confirmed' },
                         ].map((f) => (
-                            <button key={f.key} onClick={() => setFilter(f.key)} className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filter === f.key ? 'bg-primary text-white shadow-card' : 'bg-white text-text-secondary border border-border-default hover:border-border-hover'}`}>
+                            <button key={f.key} onClick={() => setFilter(f.key)} className={`px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${filter === f.key ? 'bg-primary text-white shadow-card' : 'bg-white text-text-secondary border border-border-default hover:border-border-hover'}`}>
                                 {f.label}
                             </button>
                         ))}
@@ -116,9 +243,9 @@ export default function DashboardPage() {
                 {/* Table */}
                 <div className="bg-white rounded-2xl border border-border-default shadow-card overflow-hidden">
                     <div className="px-6 py-4 border-b border-border-default/60 flex justify-between items-center">
-                        <h3 className="font-bold text-sm text-text-primary">Clinical Intake Queue</h3>
+                        <h3 className="font-bold text-sm text-text-primary">Patient Records</h3>
                         <span className="text-xs font-bold text-emerald-600 flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                             Live Sync Active
                         </span>
                     </div>
@@ -127,59 +254,75 @@ export default function DashboardPage() {
                         <div className="p-12 text-center text-text-muted text-sm">Loading patient queue...</div>
                     ) : filtered.length === 0 ? (
                         <div className="p-12 text-center text-text-muted text-sm">
-                            {intakes.length === 0 ? 'No patient intakes yet.' : 'No records match search/filter.'}
+                            {intakes.length === 0 ? 'No patient intakes in queue yet.' : 'No records match search/filter.'}
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs">
                                 <thead className="bg-surface text-text-muted font-bold uppercase text-[10px] tracking-wider">
                                     <tr>
-                                        <th className="p-4">Patient</th>
+                                        <th className="p-4">Patient Name</th>
                                         <th className="p-4">Language</th>
                                         <th className="p-4">Chief Complaint</th>
-                                        <th className="p-4">Priority</th>
-                                        <th className="p-4">Status</th>
+                                        <th className="p-4">Emergency Status</th>
+                                        <th className="p-4">Review Status</th>
                                         <th className="p-4">Time</th>
                                         <th className="p-4 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border-default/40">
                                     <AnimatePresence>
-                                        {filtered.map((record) => (
-                                            <motion.tr
-                                                key={record.id}
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                onClick={() => setSelectedRecord(record)}
-                                                className="hover:bg-surface/80 transition-colors cursor-pointer"
-                                            >
-                                                <td className="p-4 font-bold text-text-primary flex items-center gap-2">
-                                                    <User className="w-4 h-4 text-primary shrink-0" />
-                                                    <span>{record.patient?.name || 'Unknown'}</span>
-                                                    <span className="text-[10px] text-text-muted">({record.patient?.age || '—'} yrs, {record.patient?.gender || '—'})</span>
-                                                </td>
-                                                <td className="p-4 text-primary font-semibold">{record.language || '—'}</td>
-                                                <td className="p-4 text-text-secondary truncate max-w-[240px]">{record.aiResult?.chief_complaint || record.transcript?.slice(0, 50) || '—'}</td>
-                                                <td className="p-4">
-                                                    {record.aiResult?.emergency?.flag ? (
-                                                        <span className="px-3 py-1 bg-emergency-bg text-emergency border border-emergency-border rounded-full font-bold text-[10px] uppercase">Critical</span>
-                                                    ) : (
-                                                        <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-bold text-[10px] uppercase">Routine</span>
-                                                    )}
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${record.status === 'Confirmed' ? 'bg-blue-50 text-blue-700' : 'bg-amber-50 text-amber-700'}`}>
-                                                        {record.status || 'Pending'}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4 text-text-muted font-mono">{record.createdAt ? new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
-                                                <td className="p-4 text-right">
-                                                    <button onClick={(e) => { e.stopPropagation(); setSelectedRecord(record); }} className="px-3 py-1.5 bg-primary/10 hover:bg-primary text-primary hover:text-white rounded-lg font-bold text-[11px] transition-colors">
-                                                        View Report
-                                                    </button>
-                                                </td>
-                                            </motion.tr>
-                                        ))}
+                                        {filtered.map((record) => {
+                                            const isEmergency = record.aiResult?.emergency?.flag;
+                                            return (
+                                                <motion.tr
+                                                    key={record.id}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    onClick={() => setSelectedRecord(record)}
+                                                    className="hover:bg-surface/80 transition-colors cursor-pointer"
+                                                >
+                                                    <td className="p-4 font-bold text-text-primary">
+                                                        <div className="flex items-center gap-2">
+                                                            <User className="w-4 h-4 text-primary shrink-0" />
+                                                            <div>
+                                                                <span className="block text-sm font-extrabold">{record.patient?.name || 'Unknown'}</span>
+                                                                <span className="text-[10px] text-text-muted font-normal">{record.patient?.age || '—'} Yrs, {record.patient?.gender || '—'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-primary font-semibold">{record.language || '—'}</td>
+                                                    <td className="p-4 text-text-secondary truncate max-w-[220px] font-medium">
+                                                        {record.aiResult?.chief_complaint || record.transcript?.slice(0, 45) || '—'}
+                                                    </td>
+                                                    {/* RED for Emergency TRUE, GREEN for Routine FALSE */}
+                                                    <td className="p-4">
+                                                        {isEmergency ? (
+                                                            <span className="px-3 py-1 bg-red-100 text-red-700 border border-red-300 rounded-full font-extrabold text-[10px] uppercase inline-flex items-center gap-1.5 shadow-sm animate-pulse">
+                                                                <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+                                                                CRITICAL EMERGENCY
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full font-bold text-[10px] uppercase inline-flex items-center gap-1.5">
+                                                                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                                                                ROUTINE
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${record.status === 'Confirmed' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                                                            {record.status || 'Pending Review'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-text-muted font-mono">{record.createdAt ? new Date(record.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                                                    <td className="p-4 text-right">
+                                                        <button onClick={(e) => { e.stopPropagation(); setSelectedRecord(record); }} className="px-3.5 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-bold text-[11px] transition-all shadow-sm">
+                                                            View Report
+                                                        </button>
+                                                    </td>
+                                                </motion.tr>
+                                            );
+                                        })}
                                     </AnimatePresence>
                                 </tbody>
                             </table>
@@ -194,7 +337,7 @@ export default function DashboardPage() {
                             {/* Modal Header */}
                             <div className="flex items-center justify-between border-b border-border-default pb-4">
                                 <div>
-                                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Patient Clinical Intake Report</span>
+                                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Clinical Intake Summary</span>
                                     <h2 className="text-2xl font-extrabold text-text-primary">{selectedRecord.patient?.name || 'Patient Report'}</h2>
                                 </div>
                                 <button onClick={() => setSelectedRecord(null)} className="p-2 rounded-xl hover:bg-surface text-text-muted hover:text-text-primary transition">
@@ -225,12 +368,17 @@ export default function DashboardPage() {
                                 </div>
 
                                 {/* Emergency Alert if Flagged */}
-                                {selectedRecord.aiResult?.emergency?.flag && (
-                                    <div className="bg-emergency-bg border-l-4 border-emergency p-4 rounded-xl text-xs space-y-1">
-                                        <div className="flex items-center gap-2 text-emergency font-extrabold uppercase">
-                                            <AlertTriangle className="w-4 h-4" /> Critical Emergency Warning Flagged
+                                {selectedRecord.aiResult?.emergency?.flag ? (
+                                    <div className="bg-red-50 border-l-4 border-red-600 p-4 rounded-xl text-xs space-y-1 text-red-900">
+                                        <div className="flex items-center gap-2 text-red-700 font-extrabold uppercase">
+                                            <AlertTriangle className="w-4 h-4 text-red-600" /> CRITICAL EMERGENCY WARNING FLAGGED
                                         </div>
-                                        <p className="text-text-primary font-medium">{selectedRecord.aiResult?.emergency?.reasons?.join(', ')}</p>
+                                        <p className="font-medium">{selectedRecord.aiResult?.emergency?.reasons?.join(', ')}</p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-xl text-xs text-emerald-800 font-medium flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                                        <span>Routine Triage: No emergency red flags detected.</span>
                                     </div>
                                 )}
 
