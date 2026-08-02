@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: '*',
     methods: ['GET', 'POST'],
     credentials: true
 }));
@@ -36,9 +36,13 @@ app.get('/', (req, res) => {
     });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`\n🏥 CliniQ AI Backend running on http://localhost:${PORT}`);
-    console.log(`   POST http://localhost:${PORT}/api/intake`);
-    console.log(`   GET  http://localhost:${PORT}/api/health\n`);
-});
+// Start server if run directly
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+    app.listen(PORT, () => {
+        console.log(`\n🏥 CliniQ AI Backend running on http://localhost:${PORT}`);
+        console.log(`   POST http://localhost:${PORT}/api/intake`);
+        console.log(`   GET  http://localhost:${PORT}/api/health\n`);
+    });
+}
+
+export default app;
