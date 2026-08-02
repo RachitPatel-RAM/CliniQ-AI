@@ -6,8 +6,8 @@ import VoiceRecorder from '@/components/VoiceRecorder';
 import useIntakeStore from '@/hooks/useIntakeStore';
 import useSpeechRecognition from '@/hooks/useSpeechRecognition';
 import { analyzeIntake } from '@/lib/api';
-import { motion } from 'framer-motion';
-import { Mic, Keyboard, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, Keyboard, Loader2, Sparkles, Activity, ShieldCheck, Stethoscope } from 'lucide-react';
 
 export default function VoiceIntakePage() {
     const router = useRouter();
@@ -17,6 +17,7 @@ export default function VoiceIntakePage() {
     const [manualText, setManualText] = useState('');
     const [showManual, setShowManual] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loadingStage, setLoadingStage] = useState(0);
 
     // Redirect if no patient data
     useEffect(() => {
@@ -27,6 +28,27 @@ export default function VoiceIntakePage() {
     useEffect(() => {
         if (speech.transcript) setManualText(speech.transcript);
     }, [speech.transcript]);
+
+    // Cycle through engaging loading status messages while analyzing
+    useEffect(() => {
+        if (!isSubmitting) {
+            setLoadingStage(0);
+            return;
+        }
+
+        const stages = [
+            'Processing multilingual voice audio...',
+            'Extracting clinical symptoms & duration...',
+            'Synthesizing medical summary with CliniQ AI...',
+            'Preparing doctor intake report...'
+        ];
+
+        const interval = setInterval(() => {
+            setLoadingStage((prev) => (prev + 1) % stages.length);
+        }, 1800);
+
+        return () => clearInterval(interval);
+    }, [isSubmitting]);
 
     const currentText = manualText || speech.transcript;
 
@@ -48,15 +70,81 @@ export default function VoiceIntakePage() {
             setAnalysisError(err.message);
             setIsSubmitting(false);
             setAnalyzing(false);
-            alert('AI Analysis failed: ' + err.message + '\n\nPlease ensure Ollama is running with gemma3:4b model.');
+            alert('AI Analysis failed: ' + err.message + '\n\nPlease ensure your API keys or Ollama instance are active.');
         }
     };
 
     if (!patient?.name) return null;
 
+    const loadingMessages = [
+        { title: 'Listening & Transcribing', desc: 'Processing your voice in ' + selectedLanguage, icon: Activity },
+        { title: 'Clinical Extraction', desc: 'Identifying symptoms, duration & medications', icon: Stethoscope },
+        { title: 'AI Synthesis Engine', desc: 'Running CliniQ AI clinical intelligence', icon: Sparkles },
+        { title: 'Generating Doctor Brief', desc: 'Formatting report for 3-second physician review', icon: ShieldCheck }
+    ];
+
+    const CurrentIcon = loadingMessages[loadingStage].icon;
+
     return (
-        <div className="min-h-screen flex flex-col bg-surface">
+        <div className="min-h-screen flex flex-col bg-surface relative overflow-hidden">
             <Navbar />
+
+            {/* Engaging AI Processing Modal Animation Overlay */}
+            <AnimatePresence>
+                {isSubmitting && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-4"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-primary/20 text-center relative overflow-hidden"
+                        >
+                            {/* Ambient Glow background */}
+                            <div className="absolute -top-24 -left-24 w-48 h-48 bg-primary/20 rounded-full blur-3xl" />
+                            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-teal-400/20 rounded-full blur-3xl" />
+
+                            {/* Animated Pulse Ring */}
+                            <div className="relative mx-auto w-24 h-24 mb-6 flex items-center justify-center">
+                                <span className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+                                <span className="absolute inset-2 rounded-full bg-primary/10 animate-pulse" />
+                                <div className="relative w-16 h-16 rounded-full bg-gradient-to-tr from-primary to-teal-500 text-white flex items-center justify-center shadow-lg shadow-primary/30">
+                                    <CurrentIcon className="w-8 h-8 animate-bounce" />
+                                </div>
+                            </div>
+
+                            <h3 className="text-xl font-black text-slate-900 mb-2">
+                                {loadingMessages[loadingStage].title}
+                            </h3>
+                            <p className="text-sm font-medium text-slate-500 mb-6">
+                                {loadingMessages[loadingStage].desc}
+                            </p>
+
+                            {/* Animated Stage Indicators */}
+                            <div className="flex justify-center items-center gap-2 mb-6">
+                                {loadingMessages.map((_, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`h-2 rounded-full transition-all duration-500 ${
+                                            idx === loadingStage ? 'w-8 bg-primary' : 'w-2 bg-slate-200'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+
+                            <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-100 flex items-center justify-center gap-2 text-xs font-semibold text-primary">
+                                <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                                CliniQ AI is analyzing patient intake...
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12">
                 {/* Progress */}
                 <div className="mb-8">
@@ -129,19 +217,17 @@ export default function VoiceIntakePage() {
                     <button
                         onClick={handleAnalyze}
                         disabled={isSubmitting || !currentText.trim()}
-                        className="w-full bg-primary hover:bg-primary-dark disabled:bg-primary/50 text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-3 shadow-lg shadow-primary/25 disabled:shadow-none"
+                        className="w-full bg-primary hover:bg-primary-dark disabled:bg-primary/50 text-white py-4 rounded-2xl font-bold text-base transition-all flex items-center justify-center gap-3 shadow-lg shadow-primary/25 disabled:shadow-none cursor-pointer active:scale-[0.99]"
                     >
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                Analyzing with Gemma AI...
+                                Processing with CliniQ AI...
                             </>
                         ) : (
                             <>
-                                Analyze Symptoms with AI
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                                </svg>
+                                Analyse by CliniQ AI
+                                <Sparkles className="w-5 h-5 fill-current" />
                             </>
                         )}
                     </button>
