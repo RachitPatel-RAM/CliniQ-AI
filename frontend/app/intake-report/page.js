@@ -9,7 +9,7 @@ import PdfDownloadButton from '@/components/PdfDownloadButton';
 import useIntakeStore from '@/hooks/useIntakeStore';
 import { saveIntakeReport } from '@/lib/firebase';
 import { motion } from 'framer-motion';
-import { CheckCircle, Stethoscope, Clock, Pill, Heart, AlertTriangle, HelpCircle, FileText, Loader2, Home, ArrowRight, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Stethoscope, Clock, Pill, Heart, AlertTriangle, HelpCircle, FileText, Loader2, Home, ArrowRight, ShieldCheck, PlusCircle, Activity, Sparkles, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function IntakeReportPage() {
@@ -44,8 +44,15 @@ export default function IntakeReportPage() {
         }
     };
 
+    const handleContinueExplaining = () => {
+        router.push('/voice-intake');
+    };
+
     if (!aiResult) return null;
     const ai = aiResult;
+
+    const isEmergency = !!ai.emergency?.flag;
+    const symptomsCount = ai.symptoms?.length || 0;
 
     // Thank You Screen after manual submit
     if (submitted) {
@@ -130,14 +137,49 @@ export default function IntakeReportPage() {
                     <div className="lg:col-span-8 space-y-5">
                         <PatientInfoCard patient={patient} language={selectedLanguage} />
 
-                        {/* SOAP Report Header */}
+                        {/* AI Clinical Category Breakdown Badge Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className={`p-4 rounded-2xl border ${isEmergency ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                                <span className="text-[10px] font-bold uppercase tracking-wider block mb-1">Triage Status</span>
+                                <span className="font-extrabold text-sm flex items-center gap-1.5">
+                                    {isEmergency ? <AlertCircle className="w-4 h-4 text-rose-600" /> : <ShieldCheck className="w-4 h-4 text-emerald-600" />}
+                                    {isEmergency ? 'Urgent Attention' : 'Standard Routine'}
+                                </span>
+                            </div>
+
+                            <div className="p-4 bg-white rounded-2xl border border-border-default text-text-primary">
+                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-1">Extracted Symptoms</span>
+                                <span className="font-extrabold text-sm flex items-center gap-1.5 text-primary">
+                                    <Activity className="w-4 h-4" />
+                                    {symptomsCount} {symptomsCount === 1 ? 'Symptom' : 'Symptoms'}
+                                </span>
+                            </div>
+
+                            <div className="p-4 bg-white rounded-2xl border border-border-default text-text-primary">
+                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-1">Duration</span>
+                                <span className="font-extrabold text-sm flex items-center gap-1.5 text-text-primary">
+                                    <Clock className="w-4 h-4 text-amber-500" />
+                                    {ai.duration || 'Unspecified'}
+                                </span>
+                            </div>
+
+                            <div className="p-4 bg-white rounded-2xl border border-border-default text-text-primary">
+                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-1">Clinical Engine</span>
+                                <span className="font-extrabold text-sm flex items-center gap-1.5 text-primary">
+                                    <Sparkles className="w-4 h-4 text-primary" />
+                                    CliniQ AI
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Structured Clinical Report */}
                         <div className="bg-white rounded-2xl border border-border-default overflow-hidden shadow-card">
                             <div className="px-6 py-4 bg-primary text-white flex justify-between items-center">
                                 <div className="flex items-center gap-2 font-bold text-sm">
                                     <FileText className="w-5 h-5" />
                                     AI Structured Intake Report
                                 </div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-md">Gemma AI</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-md">Gemma AI Engine</span>
                             </div>
 
                             <div className="p-6 space-y-5">
@@ -188,7 +230,7 @@ export default function IntakeReportPage() {
                                     </ReportCard>
                                 )}
 
-                                <ReportCard title="Doctor Summary" icon={<FileText className="w-4 h-4" />} variant="highlight" editable>
+                                <ReportCard title="Doctor Summary (3-Sec Scan)" icon={<FileText className="w-4 h-4" />} variant="highlight" editable>
                                     <p className="leading-relaxed">{ai.doctor_summary || 'No summary generated'}</p>
                                 </ReportCard>
                             </div>
@@ -201,12 +243,21 @@ export default function IntakeReportPage() {
 
                         {/* Actions */}
                         <div className="bg-white rounded-2xl border border-border-default p-6 shadow-card space-y-4">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted">Save &amp; Submit</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted">Actions &amp; Options</h3>
+
+                            {/* Continue Explaining / Add More Symptoms Button */}
+                            <button
+                                onClick={handleContinueExplaining}
+                                className="w-full py-3.5 rounded-xl font-bold text-sm bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                <PlusCircle className="w-4 h-4" />
+                                Add / Explain More Symptoms
+                            </button>
 
                             <button
                                 onClick={handleConfirmAndSave}
                                 disabled={saving}
-                                className="w-full py-4 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                                className="w-full py-4 rounded-xl font-bold text-sm bg-primary hover:bg-primary-dark text-white shadow-lg shadow-primary/25 transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
                             >
                                 {saving ? (
                                     <><Loader2 className="w-4 h-4 animate-spin" /> Saving to Database...</>
@@ -220,7 +271,7 @@ export default function IntakeReportPage() {
 
                         {/* Raw Transcript */}
                         <div className="bg-white rounded-2xl border border-border-default p-5 shadow-card">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted mb-3">Original Transcript</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-text-muted mb-3">Original Patient Narrative</h3>
                             <p className="text-sm text-text-secondary italic leading-relaxed bg-surface rounded-xl p-4 border border-border-default/60">
                                 &quot;{transcript}&quot;
                             </p>

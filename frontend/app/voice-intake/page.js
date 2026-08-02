@@ -7,14 +7,14 @@ import useIntakeStore from '@/hooks/useIntakeStore';
 import useSpeechRecognition from '@/hooks/useSpeechRecognition';
 import { analyzeIntake } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Keyboard, Loader2, Sparkles, Activity, ShieldCheck, Stethoscope } from 'lucide-react';
+import { Mic, Keyboard, Loader2, Sparkles, Activity, ShieldCheck, Stethoscope, PlusCircle } from 'lucide-react';
 
 export default function VoiceIntakePage() {
     const router = useRouter();
     const store = useIntakeStore();
     const { patient, selectedLanguage, setTranscript, setAiResult, setAnalyzing, setAnalysisError } = store;
     const speech = useSpeechRecognition(selectedLanguage);
-    const [manualText, setManualText] = useState('');
+    const [manualText, setManualText] = useState(store.transcript || '');
     const [showManual, setShowManual] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingStage, setLoadingStage] = useState(0);
@@ -24,10 +24,16 @@ export default function VoiceIntakePage() {
         if (!patient?.name) router.replace('/select-language');
     }, [patient, router]);
 
-    // Sync speech transcript to manual text area
+    // Sync speech transcript to manual text area cleanly
     useEffect(() => {
-        if (speech.transcript) setManualText(speech.transcript);
-    }, [speech.transcript]);
+        if (speech.transcript) {
+            if (store.transcript && !speech.transcript.startsWith(store.transcript)) {
+                setManualText(store.transcript + ' ' + speech.transcript);
+            } else {
+                setManualText(speech.transcript);
+            }
+        }
+    }, [speech.transcript, store.transcript]);
 
     // Cycle through engaging loading status messages while analyzing
     useEffect(() => {
@@ -161,21 +167,30 @@ export default function VoiceIntakePage() {
                 </div>
 
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary mb-2">Describe your symptoms</h1>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary mb-2">
+                        {store.transcript ? 'Add or Edit Symptoms' : 'Describe your symptoms'}
+                    </h1>
                     <p className="text-sm text-text-secondary">
-                        Speak naturally in <strong className="text-primary">{selectedLanguage}</strong>. We&apos;ll transcribe and analyze your symptoms.
+                        Speak naturally in <strong className="text-primary">{selectedLanguage}</strong> or type below. We&apos;ll transcribe and synthesize your symptoms into a clinical brief.
                     </p>
                 </motion.div>
 
                 {/* Patient Badge */}
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mb-6 bg-white rounded-xl border border-border-default p-4 flex items-center gap-3 shadow-card">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
-                        {patient.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mb-6 bg-white rounded-xl border border-border-default p-4 flex items-center justify-between shadow-card">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary font-bold flex items-center justify-center text-sm">
+                            {patient.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </div>
+                        <div className="text-sm">
+                            <span className="font-bold text-text-primary">{patient.name}</span>
+                            <span className="text-text-muted ml-2">{patient.age}y • {patient.gender} • {selectedLanguage}</span>
+                        </div>
                     </div>
-                    <div className="text-sm">
-                        <span className="font-bold text-text-primary">{patient.name}</span>
-                        <span className="text-text-muted ml-2">{patient.age}y • {patient.gender} • {selectedLanguage}</span>
-                    </div>
+                    {store.transcript && (
+                        <span className="px-3 py-1 bg-amber-50 border border-amber-200 text-amber-700 rounded-full text-xs font-bold flex items-center gap-1.5">
+                            <PlusCircle className="w-3.5 h-3.5" /> Continuing Intake
+                        </span>
+                    )}
                 </motion.div>
 
                 {/* Voice Recorder */}
@@ -225,7 +240,7 @@ export default function VoiceIntakePage() {
                             </>
                         ) : (
                             <>
-                                Analyse by CliniQ AI
+                                {store.transcript ? 'Re-Analyse with Added Symptoms' : 'Analyse by CliniQ AI'}
                                 <Sparkles className="w-5 h-5 fill-current" />
                             </>
                         )}
