@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Step 1: Select Language - CliniQ AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#004ac6",
+            "primary-container": "#2563eb",
+            "on-primary": "#ffffff",
+            "surface": "#f7f9fb",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f2f4f6",
+            "surface-container": "#eceef0",
+            "surface-container-high": "#e6e8ea",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#434655",
+            "outline": "#737686",
+            "outline-variant": "#c3c6d7"
+          }
+        }
+      }
+    };
+    </script>
+    <link rel="stylesheet" href="../styles.css"/>
+</head>
+<body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-surface-container-lowest border-b border-outline-variant/60 shadow-xs">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    <span class="material-symbols-outlined text-[20px]">local_hospital</span>
+                </div>
+                <span class="font-extrabold text-lg text-primary tracking-tight">CliniQ AI</span>
+            </a>
+
+            <div class="flex items-center gap-4 text-xs font-bold">
+                <span class="text-outline hidden sm:inline">Patient Intake Kiosk</span>
+                <a href="index.html" class="text-primary hover:underline flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                    Exit Flow
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex flex-col justify-center">
+        
+        <!-- Step Progress Bar Header -->
+        <div class="flex flex-col mb-8 sm:mb-10">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-extrabold text-primary uppercase tracking-widest flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                    Step 1 of 4 • Language Choice
+                </span>
+                <span class="text-xs font-mono font-bold text-outline">25% Completed</span>
+            </div>
+            <div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+                <div class="h-full bg-primary w-1/4 rounded-full"></div>
+            </div>
+        </div>
+
+        <div class="mb-8 text-center sm:text-left">
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-on-surface mb-2">Select your consultation language</h1>
+            <p class="text-sm text-on-surface-variant">Choose the language you are most comfortable speaking or typing in.</p>
+        </div>
+
+        <!-- Touch-Friendly Language Selection Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            
+            <!-- Gujarati Card -->
+            <a href="describe-problem.html?lang=Gujarati" class="group p-6 sm:p-8 bg-surface-container-lowest rounded-3xl border-2 border-outline-variant hover:border-primary hover:shadow-xl transition-all text-left flex flex-col justify-between hover:scale-[1.02]">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors font-extrabold text-2xl">
+                        ગુ
+                    </div>
+                    <span class="text-[10px] font-bold text-outline uppercase tracking-wider mb-1 block">Regional Dialect</span>
+                    <h2 class="text-2xl font-extrabold text-on-surface mb-1">Gujarati</h2>
+                    <p class="text-xs text-on-surface-variant mb-6 font-semibold">ગુજરાતીમાં વાતચીત શરૂ કરો</p>
+                </div>
+                <div class="flex items-center text-primary font-bold text-sm pt-4 border-t border-outline-variant/30">
+                    ગુજરાતી પસંદ કરો 
+                    <span class="material-symbols-outlined ml-2 text-lg group-hover:translate-x-1.5 transition-transform">arrow_forward</span>
+                </div>
+            </a>
+
+            <!-- Hindi Card -->
+            <a href="describe-problem.html?lang=Hindi" class="group p-6 sm:p-8 bg-surface-container-lowest rounded-3xl border-2 border-outline-variant hover:border-primary hover:shadow-xl transition-all text-left flex flex-col justify-between hover:scale-[1.02]">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors font-extrabold text-2xl">
+                        हिં
+                    </div>
+                    <span class="text-[10px] font-bold text-outline uppercase tracking-wider mb-1 block">National Language</span>
+                    <h2 class="text-2xl font-extrabold text-on-surface mb-1">Hindi</h2>
+                    <p class="text-xs text-on-surface-variant mb-6 font-semibold">हिंदी में विवरण दें</p>
+                </div>
+                <div class="flex items-center text-primary font-bold text-sm pt-4 border-t border-outline-variant/30">
+                    हिंदी चुनें 
+                    <span class="material-symbols-outlined ml-2 text-lg group-hover:translate-x-1.5 transition-transform">arrow_forward</span>
+                </div>
+            </a>
+
+            <!-- English Card -->
+            <a href="describe-problem.html?lang=English" class="group p-6 sm:p-8 bg-surface-container-lowest rounded-3xl border-2 border-outline-variant hover:border-primary hover:shadow-xl transition-all text-left flex flex-col justify-between hover:scale-[1.02]">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-symbols-outlined text-[30px]">language</span>
+                    </div>
+                    <span class="text-[10px] font-bold text-outline uppercase tracking-wider mb-1 block">Standard</span>
+                    <h2 class="text-2xl font-extrabold text-on-surface mb-1">English</h2>
+                    <p class="text-xs text-on-surface-variant mb-6 font-semibold">Standard intake in English</p>
+                </div>
+                <div class="flex items-center text-primary font-bold text-sm pt-4 border-t border-outline-variant/30">
+                    Select English 
+                    <span class="material-symbols-outlined ml-2 text-lg group-hover:translate-x-1.5 transition-transform">arrow_forward</span>
+                </div>
+            </a>
+
+        </div>
+
+    </main>
+
+</body>
+</html>

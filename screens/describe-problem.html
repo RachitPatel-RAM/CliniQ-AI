@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Step 2: Describe Symptoms - CliniQ AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#004ac6",
+            "primary-container": "#2563eb",
+            "on-primary": "#ffffff",
+            "surface": "#f7f9fb",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f2f4f6",
+            "surface-container": "#eceef0",
+            "surface-container-high": "#e6e8ea",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#434655",
+            "outline": "#737686",
+            "outline-variant": "#c3c6d7",
+            "error": "#ba1a1a",
+            "error-container": "#ffdad6"
+          }
+        }
+      }
+    };
+    </script>
+    <link rel="stylesheet" href="../styles.css"/>
+</head>
+<body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-surface-container-lowest border-b border-outline-variant/60 shadow-xs">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    <span class="material-symbols-outlined text-[20px]">local_hospital</span>
+                </div>
+                <span class="font-extrabold text-lg text-primary tracking-tight">CliniQ AI</span>
+            </a>
+
+            <div class="flex items-center gap-4 text-xs font-bold">
+                <span class="text-outline hidden sm:inline" id="lang-display-badge">Language: Gujarati</span>
+                <a href="select-language.html" class="text-primary hover:underline flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+                    Change Language
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 flex flex-col">
+        
+        <!-- Step Progress Header -->
+        <div class="flex flex-col mb-8">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-extrabold text-primary uppercase tracking-widest flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                    Step 2 of 4 • Symptom Narrative Intake
+                </span>
+                <span class="text-xs font-mono font-bold text-outline">50% Completed</span>
+            </div>
+            <div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+                <div class="h-full bg-primary w-2/4 rounded-full"></div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-on-surface mb-2">Describe your medical concern</h1>
+            <p class="text-sm text-on-surface-variant">Speak into the microphone or type below. You can express yourself in your natural words.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Input Column -->
+            <div class="lg:col-span-8 space-y-6">
+                <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 border border-outline-variant/60 shadow-xs space-y-4">
+                    
+                    <div class="flex flex-wrap items-center justify-between gap-3 pb-2">
+                        <label for="symptom-text" class="text-sm font-bold text-on-surface flex items-center gap-2">
+                            <span>Symptom Narrative</span>
+                            <span class="material-symbols-outlined text-primary text-[18px]">clinical_notes</span>
+                        </label>
+
+                        <!-- Voice Mic Button -->
+                        <button id="voice-btn" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-white hover:bg-primary-container transition-all text-xs font-bold shadow-md shadow-primary/20">
+                            <span class="material-symbols-outlined text-[18px]" id="voice-icon">mic</span>
+                            <span id="voice-label">Record Voice Intake</span>
+                        </button>
+                    </div>
+
+                    <!-- Recording Active Banner -->
+                    <div id="recording-banner" class="hidden bg-error-container text-error p-4 rounded-2xl text-xs font-bold flex items-center justify-between animate-pulse">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 bg-error rounded-full animate-ping"></span>
+                            <span>Microphone Active... Listening in Gujarati...</span>
+                        </div>
+                        <span class="font-mono text-sm">00:06</span>
+                    </div>
+
+                    <!-- Text Area -->
+                    <textarea id="symptom-text" rows="8" class="w-full bg-surface-container-low/60 rounded-2xl p-4 sm:p-5 text-sm sm:text-base text-on-surface placeholder:text-outline/60 focus:outline-none focus:ring-2 focus:ring-primary/40 border border-outline-variant/40 resize-none font-sans leading-relaxed shadow-inner" placeholder="Type your symptoms here or click 'Record Voice Intake'..."></textarea>
+
+                    <div class="pt-4 border-t border-outline-variant/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <span class="text-xs font-mono text-outline" id="char-count">0 / 2000 chars</span>
+
+                        <button id="analyze-btn" class="w-full sm:w-auto bg-primary hover:bg-primary-container text-white px-8 py-3.5 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 shadow-lg shadow-primary/25 hover:scale-[1.02]">
+                            <span>Analyze Symptoms with Gemini</span>
+                            <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sample Column -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-surface-container-low rounded-3xl p-6 border border-outline-variant/40 space-y-4">
+                    <div class="flex items-center gap-2 text-xs font-bold text-outline uppercase tracking-wider">
+                        <span class="material-symbols-outlined text-primary text-[18px]">lightbulb</span>
+                        Sample Patient Inputs
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <button class="ex-btn w-full text-left p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/50 hover:border-primary transition-all shadow-xs group">
+                            <p class="text-xs sm:text-sm text-on-surface-variant italic mb-2 leading-relaxed">"મને બે દિવસથી છાતીમાં ભારે દુખાવો થાય છે અને ડાબા હાથ અને જડબા તરફ દુખાવો ફેલાય છે."</p>
+                            <span class="text-[11px] font-bold text-primary flex items-center gap-1 group-hover:underline">
+                                Load Cardiac Complaint Example (Gujarati)
+                                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                            </span>
+                        </button>
+
+                        <button class="ex-btn w-full text-left p-4 rounded-2xl bg-surface-container-lowest border border-outline-variant/50 hover:border-primary transition-all shadow-xs group">
+                            <p class="text-xs sm:text-sm text-on-surface-variant italic mb-2 leading-relaxed">"मुझे दो दिन से तेज बुखार और सिरदर्द है। सांस लेने में तकलीफ हो रही है।"</p>
+                            <span class="text-[11px] font-bold text-primary flex items-center gap-1 group-hover:underline">
+                                Load Fever Example (Hindi)
+                                <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lang = urlParams.get('lang') || sessionStorage.getItem('intakeLanguage') || 'Gujarati';
+        const preset = urlParams.get('preset');
+        
+        document.getElementById('lang-display-badge').innerText = `Language: ${lang}`;
+        const textarea = document.getElementById('symptom-text');
+
+        if (preset === 'demo' || lang === 'Gujarati') {
+            textarea.value = "મને બે દિવસથી છાતીમાં ભારે દુખાવો થાય છે અને ડાબા હાથ અને જડબા તરફ દુખાવો ફેલાય છે. સાથે ગભરામણ થાય છે.";
+        }
+
+        document.querySelectorAll('.ex-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                textarea.value = btn.querySelector('p').innerText.replace(/"/g, '');
+            });
+        });
+
+        const voiceBtn = document.getElementById('voice-btn');
+        let isRec = false;
+        voiceBtn.addEventListener('click', () => {
+            isRec = !isRec;
+            document.getElementById('recording-banner').classList.toggle('hidden', !isRec);
+            if (isRec) {
+                textarea.value = "મને બે દિવસથી છાતીમાં ભારે દુખાવો થાય છે...";
+            }
+        });
+
+        document.getElementById('analyze-btn').addEventListener('click', () => {
+            if (!textarea.value.trim()) {
+                alert('Please enter or record your symptoms before proceeding.');
+                return;
+            }
+            sessionStorage.setItem('intakeLanguage', lang);
+            sessionStorage.setItem('intakeText', textarea.value.trim());
+            window.location.href = 'ai-analysis.html';
+        });
+    });
+    </script>
+</body>
+</html>

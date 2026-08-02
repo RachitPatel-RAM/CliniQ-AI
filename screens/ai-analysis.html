@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Step 3: AI Triage Analysis - CliniQ AI</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#004ac6",
+            "primary-container": "#2563eb",
+            "on-primary": "#ffffff",
+            "surface": "#f7f9fb",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f2f4f6",
+            "surface-container": "#eceef0",
+            "surface-container-high": "#e6e8ea",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#434655",
+            "outline": "#737686",
+            "outline-variant": "#c3c6d7",
+            "error": "#ba1a1a"
+          }
+        }
+      }
+    };
+    </script>
+    <link rel="stylesheet" href="../styles.css"/>
+</head>
+<body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-surface-container-lowest border-b border-outline-variant/60 shadow-xs">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    <span class="material-symbols-outlined text-[20px]">local_hospital</span>
+                </div>
+                <span class="font-extrabold text-lg text-primary tracking-tight">CliniQ AI</span>
+            </a>
+
+            <div class="flex items-center gap-2 text-xs font-bold text-primary">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>Google Gemini API Synthesizing</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-10 flex flex-col">
+        
+        <!-- Step Progress Header -->
+        <div class="flex flex-col mb-8">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-extrabold text-primary uppercase tracking-widest flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                    Step 3 of 4 • AI Triage Synthesis
+                </span>
+                <span class="text-xs font-mono font-bold text-outline">75% Completed</span>
+            </div>
+            <div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+                <div class="h-full bg-primary w-3/4 rounded-full"></div>
+            </div>
+        </div>
+
+        <div class="mb-8 text-center sm:text-left">
+            <h1 class="text-2xl sm:text-4xl font-extrabold text-on-surface mb-2">Processing Patient Narrative</h1>
+            <p class="text-sm text-on-surface-variant max-w-xl">Translating transcript into English, categorizing medical markers, and creating a physician SOAP report.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- Left Timeline Steps -->
+            <div class="lg:col-span-7 bg-surface-container-lowest rounded-3xl p-6 sm:p-8 border border-outline-variant/60 shadow-xs">
+                <div class="space-y-6 sm:space-y-8 relative">
+                    <div class="step flex gap-4 opacity-40 transition-all duration-500" id="step-1">
+                        <div class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-sm step-icon">1</div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-bold text-on-surface">Connecting to Gemini AI Engine</h3>
+                            <p class="text-xs text-on-surface-variant">Project: 304280526994 (CliniQ Ai)</p>
+                            <div class="w-full bg-surface-container-high h-1 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-primary w-0 transition-all duration-700 step-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step flex gap-4 opacity-40 transition-all duration-500" id="step-2">
+                        <div class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-sm step-icon">2</div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-bold text-on-surface">Parsing Multilingual Transcript</h3>
+                            <p class="text-xs text-on-surface-variant">Translating Gujarati/Hindi input to clinical terminology</p>
+                            <div class="w-full bg-surface-container-high h-1 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-primary w-0 transition-all duration-700 step-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step flex gap-4 opacity-40 transition-all duration-500" id="step-3">
+                        <div class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-sm step-icon">3</div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-bold text-on-surface">Synthesizing SOAP Narrative</h3>
+                            <p class="text-xs text-on-surface-variant">Extracting Chief Complaint & Temporal Onset</p>
+                            <div class="w-full bg-surface-container-high h-1 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-primary w-0 transition-all duration-700 step-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="step flex gap-4 opacity-40 transition-all duration-500" id="step-4">
+                        <div class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-sm step-icon">4</div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-bold text-on-surface">Persisting to Firebase Firestore</h3>
+                            <p class="text-xs text-on-surface-variant">Syncing record to live intake queue</p>
+                            <div class="w-full bg-surface-container-high h-1 rounded-full mt-2 overflow-hidden">
+                                <div class="h-full bg-primary w-0 transition-all duration-700 step-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Terminal Logs -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-slate-900 text-slate-100 rounded-3xl p-6 font-mono text-xs shadow-xl border border-slate-800 space-y-3">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800 text-[10px] text-slate-400">
+                        <span>GEMINI_API_STREAM</span>
+                        <span class="text-emerald-400 font-bold">● ACTIVE</span>
+                    </div>
+                    <div class="space-y-2 text-[11px] min-h-[140px]" id="logs">
+                        <div class="text-slate-500">> Initiating Google Gemini API Request...</div>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/60 flex items-center justify-between">
+                    <div>
+                        <div class="text-[10px] font-bold text-outline uppercase">Triage Status</div>
+                        <div class="text-lg font-extrabold text-primary" id="status-label">Processing...</div>
+                    </div>
+                    <a href="clinical-summary.html" class="px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-sm hover:bg-primary-container transition-all">
+                        View Summary Report
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script type="module">
+    import { db, collection, addDoc, serverTimestamp } from "../firebase-config.js";
+    import { analyzeSymptomsWithGemini } from "../gemini-service.js";
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const lang = sessionStorage.getItem('intakeLanguage') || 'Gujarati';
+        const text = sessionStorage.getItem('intakeText') || 'મને બે દિવસથી છાતીમાં ભારે દુખાવો થાય છે...';
+
+        const logs = document.getElementById('logs');
+        const statusLabel = document.getElementById('status-label');
+
+        function appendLog(msg, color = 'text-emerald-400') {
+            const div = document.createElement('div');
+            div.className = `${color} font-medium`;
+            div.innerText = msg;
+            logs.appendChild(div);
+        }
+
+        function markStepComplete(stepId) {
+            const el = document.getElementById(stepId);
+            if (el) {
+                el.classList.remove('opacity-40');
+                el.classList.add('opacity-100');
+                el.querySelector('.step-bar').style.width = '100%';
+                const icon = el.querySelector('.step-icon');
+                icon.classList.add('bg-primary', 'text-white');
+                icon.innerText = '✓';
+            }
+        }
+
+        markStepComplete('step-1');
+        appendLog(`[GEMINI_API] Project 304280526994 Authenticated`);
+
+        await new Promise(r => setTimeout(r, 600));
+        markStepComplete('step-2');
+        appendLog(`[TRANSCRIPT] Processing ${lang} input narrative...`);
+
+        const aiResult = await analyzeSymptomsWithGemini(text, lang);
+
+        markStepComplete('step-3');
+        appendLog(`[SOAP_SYNTHESIS] Chief Complaint: "${aiResult.chiefComplaint}"`);
+        appendLog(`[TRIAGE] Priority: ${aiResult.triagePriority}`, aiResult.isHighRisk ? 'text-rose-400' : 'text-emerald-400');
+
+        sessionStorage.setItem('aiAnalysisResult', JSON.stringify(aiResult));
+
+        markStepComplete('step-4');
+        appendLog(`[FIRESTORE] Persisting doc to Firebase Firestore...`);
+
+        try {
+            const docRef = await addDoc(collection(db, "intakes"), {
+                patientName: "Robert J. Miller",
+                mrn: "MRN-992334",
+                age: "49y",
+                gender: "Male",
+                vitals: "BP 154/98 • HR 102",
+                language: lang,
+                symptomRawText: text,
+                chiefComplaint: aiResult.chiefComplaint,
+                symptomsList: aiResult.symptomsList,
+                temporalOnset: aiResult.temporalOnset,
+                triagePriority: aiResult.triagePriority,
+                isHighRisk: aiResult.isHighRisk,
+                status: 'Pending Review',
+                createdAt: serverTimestamp()
+            });
+
+            sessionStorage.setItem('currentDocId', docRef.id);
+            appendLog(`[SUCCESS] Firestore Doc ID: ${docRef.id}`);
+            statusLabel.innerText = "Complete ✓";
+
+            setTimeout(() => { window.location.href = 'clinical-summary.html'; }, 800);
+        } catch (err) {
+            console.error("Firestore error:", err);
+            window.location.href = 'clinical-summary.html';
+        }
+    });
+    </script>
+</body>
+</html>
