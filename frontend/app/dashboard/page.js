@@ -238,7 +238,7 @@ export default function DashboardPage() {
             <Navbar />
             <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
                 {/* Header (Clean Doctor Portal Header) */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-border-default shadow-card">
+                <div className="bg-white p-6 rounded-3xl border border-border-default shadow-card flex items-center justify-between">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-bold inline-flex items-center gap-1.5">
@@ -247,12 +247,6 @@ export default function DashboardPage() {
                             </span>
                         </div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary">Doctor Clinical Portal</h1>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <button onClick={handleLogout} className="bg-surface hover:bg-red-50 text-text-secondary hover:text-red-700 border border-border-default hover:border-red-200 px-4 py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5">
-                            <LogOut className="w-4 h-4" /> Logout
-                        </button>
                     </div>
                 </div>
 
