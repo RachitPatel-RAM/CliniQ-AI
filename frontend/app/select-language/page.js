@@ -59,7 +59,7 @@ export default function SelectLanguagePage() {
                 </motion.div>
 
                 {/* Language Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
                     {LANGUAGES.map((lang, i) => (
                         <LanguageCard
                             key={lang.language}
@@ -73,6 +73,41 @@ export default function SelectLanguagePage() {
                         />
                     ))}
                 </div>
+
+                {/* Future Expansion Roadmap Notice */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-auto bg-white rounded-3xl p-6 border border-border-default shadow-card space-y-4"
+                >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-default/60 pb-3">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            <h3 className="text-sm font-extrabold text-text-primary uppercase tracking-wider">
+                                Expansion Vision — Future Versions
+                            </h3>
+                        </div>
+                        <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full w-fit">
+                            Regional Inclusivity Roadmap
+                        </span>
+                    </div>
+
+                    <p className="text-xs text-text-secondary leading-relaxed">
+                        <strong className="text-text-primary">Why regional languages?</strong> India has immense linguistic diversity. People should be able to explain their health problems in the language they are most comfortable with. This makes healthcare more accessible and inclusive.
+                    </p>
+
+                    <div className="space-y-2">
+                        <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">Upcoming Regional Language Support:</span>
+                        <div className="flex flex-wrap gap-2">
+                            {['Marathi', 'Tamil', 'Telugu', 'Bengali', 'Kannada', 'Malayalam', 'Punjabi', 'Odia', 'Assamese'].map((lang) => (
+                                <span key={lang} className="px-3 py-1 bg-surface rounded-lg border border-border-default text-xs font-semibold text-text-secondary">
+                                    {lang}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                </motion.div>
             </main>
         </div>
     );

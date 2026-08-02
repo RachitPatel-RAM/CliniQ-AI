@@ -1,4 +1,5 @@
 // CliniQ AI — Express Backend Server
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import intakeRoutes from './routes/intakeRoutes.js';

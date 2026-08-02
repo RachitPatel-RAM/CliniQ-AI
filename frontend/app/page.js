@@ -142,6 +142,109 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Language Expansion & Inclusivity Section */}
+            <section className="bg-surface border-t border-border-default/60 py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto space-y-12">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-center space-y-4 max-w-3xl mx-auto"
+                    >
+                        <span className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
+                            <Languages className="w-4 h-4" />
+                            Language Inclusivity Vision
+                        </span>
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-text-primary">
+                            Healthcare for Every Regional Voice
+                        </h2>
+                        <p className="text-text-secondary text-sm sm:text-base leading-relaxed">
+                            India has many regional languages. People should be able to explain their health problems in the language they are most comfortable with — making healthcare more accessible and inclusive.
+                        </p>
+                    </motion.div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                        {/* Currently Supported */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-emerald-200 shadow-card flex flex-col justify-between"
+                        >
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-extrabold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
+                                        Active Prototype Support
+                                    </span>
+                                    <span className="text-xs font-mono text-text-muted">3 Languages</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-text-primary">Available Today</h3>
+                                <div className="space-y-3 pt-2">
+                                    {[
+                                        { name: 'Gujarati', native: 'ગુજરાતી', desc: 'Full voice & text clinical intake' },
+                                        { name: 'Hindi', native: 'हिन्दी', desc: 'Full voice & text clinical intake' },
+                                        { name: 'English', native: 'English', desc: 'Standard international clinical intake' },
+                                    ].map((l) => (
+                                        <div key={l.name} className="flex items-center justify-between p-3.5 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                                            <div>
+                                                <div className="font-bold text-text-primary text-sm">{l.name} <span className="text-xs text-text-muted font-normal">({l.native})</span></div>
+                                                <div className="text-xs text-text-secondary">{l.desc}</div>
+                                            </div>
+                                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">Ready</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Future Versions Expansion */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-border-default shadow-card flex flex-col justify-between space-y-6"
+                        >
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-extrabold text-primary uppercase tracking-wider bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                                        Future Versions Roadmap
+                                    </span>
+                                    <span className="text-xs font-mono text-text-muted">9 Upcoming Languages</span>
+                                </div>
+                                <h3 className="text-xl font-bold text-text-primary">Expanding Multilingual Reach</h3>
+                                <p className="text-xs sm:text-sm text-text-secondary">
+                                    We are actively working on expanding ASR (Automatic Speech Recognition) models to support all major Indian regional languages:
+                                </p>
+                                <div className="flex flex-wrap gap-2.5 pt-2">
+                                    {[
+                                        { name: 'Marathi', script: 'मराठी' },
+                                        { name: 'Tamil', script: 'தமிழ்' },
+                                        { name: 'Telugu', script: 'తెలుగు' },
+                                        { name: 'Bengali', script: 'বাংলা' },
+                                        { name: 'Kannada', script: 'ಕನ್ನಡ' },
+                                        { name: 'Malayalam', script: 'മലയാളം' },
+                                        { name: 'Punjabi', script: 'ਪੰਜਾਬੀ' },
+                                        { name: 'Odia', script: 'ଓଡ଼િଆ' },
+                                        { name: 'Assamese', script: 'অসমীয়া' },
+                                    ].map((lang) => (
+                                        <div key={lang.name} className="flex items-center gap-1.5 px-3.5 py-2 bg-surface rounded-xl border border-border-default hover:border-primary/40 transition-all text-xs font-bold text-text-primary shadow-xs">
+                                            <span>{lang.name}</span>
+                                            <span className="text-[10px] text-text-muted font-normal">({lang.script})</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="bg-primary/5 p-4 rounded-2xl border-l-4 border-primary text-xs sm:text-sm text-text-secondary">
+                                <strong className="text-text-primary font-semibold block mb-1">Why does this matter?</strong>
+                                Healthcare outcomes improve significantly when patients can communicate symptoms naturally without language barriers.
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
+            </section>
+
             {/* Footer */}
             <footer className="bg-white border-t border-border-default/60 py-8 px-4 sm:px-6 text-center text-xs text-text-muted">
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">

@@ -4,7 +4,10 @@ CliniQ AI is an AI-powered clinical patient intake assistant built with **Next.j
 
 ## Features
 
-- **Multilingual Voice Intake**: Support for Gujarati (ગુજરાતી), Hindi (हिन्दी), and English using Web Speech API.
+- **Multilingual Voice Intake**:
+  - **Currently Supported Prototype**: Gujarati (ગુજરાતી), Hindi (हिन्दी), and English using Web Speech API & ASR pipelines.
+  - **Future Roadmap**: Support for Marathi, Tamil, Telugu, Bengali, Kannada, Malayalam, Punjabi, Odia, and Assamese.
+  - **Why Regional Languages?**: India has immense linguistic diversity. People should be able to explain their health problems in the language they are most comfortable with, making healthcare more accessible and inclusive.
 - **AI Clinical Extraction**: Structured SOAP-style reporting powered by Gemma 3:4b local LLM.
 - **Real-Time Data Persistence**: Instant synchronization with Firebase Realtime Database.
 - **Doctor Dashboard**: Isolated physician portal to view, filter, and review patient intake queues.
