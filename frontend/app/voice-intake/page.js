@@ -208,9 +208,8 @@ export default function VoiceIntakePage() {
                             onChange={(e) => setManualText(e.target.value)}
                             placeholder={showManual ? 'Type your symptoms here...' : 'Your spoken words will appear here...'}
                             className="w-full bg-surface rounded-xl p-4 text-sm border border-border-default focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
-                            readOnly={!showManual && !speech.transcript}
                         />
-                        <p className="text-xs text-text-muted mt-1 text-right">{manualText.length} / 2000 chars</p>
+                        <p className="text-xs text-text-muted mt-1 text-right">{manualText.length} characters recorded (Unlimited)</p>
                     </div>
 
                     {/* Submit Button */}
