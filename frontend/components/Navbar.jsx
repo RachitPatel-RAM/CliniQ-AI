@@ -1,14 +1,29 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Activity, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { Activity, Menu, X, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function Navbar() {
     const pathname = usePathname();
+    const router = useRouter();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const isDoctorRoute = pathname === '/dashboard' || pathname === '/doctor';
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const auth = sessionStorage.getItem('cliniq_doctor_auth');
+            setIsLoggedIn(auth === 'true');
+        }
+    }, [pathname]);
+
+    const handleDoctorLogout = () => {
+        sessionStorage.removeItem('cliniq_doctor_auth');
+        setIsLoggedIn(false);
+        window.location.href = '/doctor';
+    };
 
     return (
         <header className="sticky top-0 z-50 glass-strong border-b border-border-default/60 shadow-card">
@@ -26,7 +41,7 @@ export default function Navbar() {
                     </div>
                 </Link>
 
-                {/* Desktop Nav (Hide Home & New Intake on Doctor side) */}
+                {/* Desktop Nav (Patient Side) */}
                 {!isDoctorRoute && (
                     <nav className="hidden md:flex items-center gap-1">
                         <NavLink href="/" label="Home" active={pathname === '/'} />
@@ -34,8 +49,9 @@ export default function Navbar() {
                     </nav>
                 )}
 
-                {/* CTA + Mobile Toggle */}
+                {/* Top Navbar Actions */}
                 <div className="flex items-center gap-3">
+                    {/* Patient Start Intake CTA */}
                     {!isDoctorRoute && (
                         <Link
                             href="/select-language"
@@ -47,6 +63,18 @@ export default function Navbar() {
                             </svg>
                         </Link>
                     )}
+
+                    {/* RED Logout Button for Doctor Portal (visible on desktop & mobile) */}
+                    {isDoctorRoute && isLoggedIn && (
+                        <button
+                            onClick={handleDoctorLogout}
+                            className="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200 px-4 py-2 rounded-xl font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span>Logout</span>
+                        </button>
+                    )}
+
                     {!isDoctorRoute && (
                         <button
                             className="md:hidden p-2 rounded-lg hover:bg-border-default/50 transition"
