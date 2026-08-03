@@ -30,14 +30,16 @@ export default function LandingPage() {
                         </h1>
 
                         <p className="text-text-secondary text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                            Speak naturally in <strong className="text-text-primary">Gujarati</strong>, <strong className="text-text-primary">Hindi</strong>, or <strong className="text-text-primary">English</strong>. AI converts your voice into structured clinical intake reports for physicians.
+                            Speak naturally in <strong className="text-text-primary">Gujarati</strong>, <strong className="text-text-primary">Hindi</strong>, <strong className="text-text-primary">Marathi</strong>, or <strong className="text-text-primary">English</strong> — or select <strong className="text-text-primary">Auto-Detect</strong>. AI converts your voice into structured clinical intake reports for physicians.
                         </p>
 
                         {/* Language Pills */}
                         <div className="flex flex-wrap justify-center lg:justify-start gap-2 pt-1">
                             {[
+                                { label: '🌐 Auto-Detect', sub: 'Multilingual', color: 'bg-purple-500' },
                                 { label: 'ગુજરાતી', sub: 'Gujarati', color: 'bg-emerald-500' },
                                 { label: 'हिन्दी', sub: 'Hindi', color: 'bg-amber-500' },
+                                { label: 'मराठी', sub: 'Marathi', color: 'bg-rose-500' },
                                 { label: 'English', sub: 'EN', color: 'bg-blue-500' },
                             ].map((lang) => (
                                 <div key={lang.label} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-full border border-border-default text-xs font-bold shadow-sm">
@@ -119,7 +121,7 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { step: '01', icon: <Languages className="w-6 h-6" />, title: 'Select Language', desc: 'Patient chooses Gujarati, Hindi, or English on arrival.' },
+                            { step: '01', icon: <Languages className="w-6 h-6" />, title: 'Select Language', desc: 'Patient chooses Gujarati, Hindi, Marathi, English, or Auto-Detect.' },
                             { step: '02', icon: <Mic className="w-6 h-6" />, title: 'Speak Symptoms', desc: 'Real-time voice transcription captures the patient narrative naturally.' },
                             { step: '03', icon: <Zap className="w-6 h-6" />, title: 'AI Intake Report', desc: 'Gemma AI extracts structured clinical data and flags emergencies instantly.' },
                         ].map((f, i) => (
@@ -153,94 +155,58 @@ export default function LandingPage() {
                     >
                         <span className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-2">
                             <Languages className="w-4 h-4" />
-                            Language Inclusivity Vision
+                            Multilingual Healthcare Access
                         </span>
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-text-primary">
                             Healthcare for Every Regional Voice
                         </h2>
                         <p className="text-text-secondary text-sm sm:text-base leading-relaxed">
-                            India has many regional languages. People should be able to explain their health problems in the language they are most comfortable with -making healthcare more accessible and inclusive.
+                            Patients can express their symptoms naturally in their comfortable native dialect or mix languages freely with full AI clinical intake synthesis.
                         </p>
                     </motion.div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-                        {/* Currently Supported */}
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="lg:col-span-5 bg-white p-6 sm:p-8 rounded-3xl border border-emerald-200 shadow-card flex flex-col justify-between"
-                        >
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-extrabold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
-                                        Active Prototype Support
-                                    </span>
-                                    <span className="text-xs font-mono text-text-muted">3 Languages</span>
-                                </div>
-                                <h3 className="text-xl font-bold text-text-primary">Available Today</h3>
-                                <div className="space-y-3 pt-2">
-                                    {[
-                                        { name: 'Gujarati', native: 'ગુજરાતી', desc: 'Full voice & text clinical intake' },
-                                        { name: 'Hindi', native: 'हिन्दी', desc: 'Full voice & text clinical intake' },
-                                        { name: 'English', native: 'English', desc: 'Standard international clinical intake' },
-                                    ].map((l) => (
-                                        <div key={l.name} className="flex items-center justify-between p-3.5 bg-emerald-50/50 rounded-2xl border border-emerald-100">
-                                            <div>
-                                                <div className="font-bold text-text-primary text-sm">{l.name} <span className="text-xs text-text-muted font-normal">({l.native})</span></div>
-                                                <div className="text-xs text-text-secondary">{l.desc}</div>
-                                            </div>
-                                            <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">Ready</span>
-                                        </div>
-                                    ))}
-                                </div>
+                    {/* All Live Supported Languages Grid */}
+                    <div className="bg-white p-6 sm:p-10 rounded-3xl border border-emerald-200 shadow-card space-y-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-border-default/60">
+                            <div>
+                                <span className="text-xs font-extrabold text-emerald-600 uppercase tracking-wider bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5 inline-flex mb-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
+                                    100% Production Ready
+                                </span>
+                                <h3 className="text-xl font-bold text-text-primary">Fully Supported Voice Languages</h3>
                             </div>
-                        </motion.div>
+                            <span className="text-xs font-mono font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-xl border border-primary/20">
+                                5 Intake Modes Active
+                            </span>
+                        </div>
 
-                        {/* Future Versions Expansion */}
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            className="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-border-default shadow-card flex flex-col justify-between space-y-6"
-                        >
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs font-extrabold text-primary uppercase tracking-wider bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-                                        Future Versions Roadmap
-                                    </span>
-                                    <span className="text-xs font-mono text-text-muted">9 Upcoming Languages</span>
-                                </div>
-                                <h3 className="text-xl font-bold text-text-primary">Expanding Multilingual Reach</h3>
-                                <p className="text-xs sm:text-sm text-text-secondary">
-                                    We are actively working on expanding ASR (Automatic Speech Recognition) models to support all major Indian regional languages:
-                                </p>
-                                <div className="flex flex-wrap gap-2.5 pt-2">
-                                    {[
-                                        { name: 'Marathi', script: 'मराठी' },
-                                        { name: 'Tamil', script: 'தமிழ்' },
-                                        { name: 'Telugu', script: 'తెలుగు' },
-                                        { name: 'Bengali', script: 'বাংলা' },
-                                        { name: 'Kannada', script: 'ಕನ್ನಡ' },
-                                        { name: 'Malayalam', script: 'മലയാളം' },
-                                        { name: 'Punjabi', script: 'ਪੰਜਾਬੀ' },
-                                        { name: 'Odia', script: 'ଓଡ଼િଆ' },
-                                        { name: 'Assamese', script: 'অসমীয়া' },
-                                    ].map((lang) => (
-                                        <div key={lang.name} className="flex items-center gap-1.5 px-3.5 py-2 bg-surface rounded-xl border border-border-default hover:border-primary/40 transition-all text-xs font-bold text-text-primary shadow-xs">
-                                            <span>{lang.name}</span>
-                                            <span className="text-[10px] text-text-muted font-normal">({lang.script})</span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                            {[
+                                { name: 'Auto-Detect', native: '🌐 Multilingual', desc: 'Smart automatic language detection', badge: 'bg-purple-100 text-purple-700 border-purple-200' },
+                                { name: 'Gujarati', native: 'ગુજરાતી', desc: 'Full voice & text clinical intake', badge: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+                                { name: 'Hindi', native: 'हिन्दी', desc: 'Full voice & text clinical intake', badge: 'bg-amber-100 text-amber-700 border-amber-200' },
+                                { name: 'Marathi', native: 'मराठी', desc: 'Full voice & text clinical intake', badge: 'bg-rose-100 text-rose-700 border-rose-200' },
+                                { name: 'English', native: 'English', desc: 'Standard international clinical intake', badge: 'bg-blue-100 text-blue-700 border-blue-200' },
+                            ].map((l) => (
+                                <div key={l.name} className="p-4 bg-surface rounded-2xl border border-border-default/80 flex flex-col justify-between space-y-3 hover:border-primary/40 transition">
+                                    <div className="space-y-1">
+                                        <div className="font-bold text-text-primary text-sm flex items-center justify-between">
+                                            <span>{l.name}</span>
+                                            <span className="text-xs text-text-muted font-normal">({l.native})</span>
                                         </div>
-                                    ))}
+                                        <p className="text-xs text-text-secondary leading-relaxed">{l.desc}</p>
+                                    </div>
+                                    <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-lg border text-center ${l.badge}`}>
+                                        Active & Ready
+                                    </span>
                                 </div>
-                            </div>
+                            ))}
+                        </div>
 
-                            <div className="bg-primary/5 p-4 rounded-2xl border-l-4 border-primary text-xs sm:text-sm text-text-secondary">
-                                <strong className="text-text-primary font-semibold block mb-1">Why does this matter?</strong>
-                                Healthcare outcomes improve significantly when patients can communicate symptoms naturally without language barriers.
-                            </div>
-                        </motion.div>
+                        <div className="bg-primary/5 p-4 rounded-2xl border-l-4 border-primary text-xs sm:text-sm text-text-secondary">
+                            <strong className="text-text-primary font-semibold block mb-1">Seamless Clinical Intake</strong>
+                            Patients can speak naturally in Gujarati, Hindi, Marathi, English, or mixed dialects. CliniQ AI synthesizes the narrative directly into a structured doctor summary.
+                        </div>
                     </div>
                 </div>
             </section>

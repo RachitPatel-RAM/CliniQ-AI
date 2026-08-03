@@ -76,38 +76,42 @@ export default function SelectLanguagePage() {
                     ))}
                 </div>
 
-                {/* Future Expansion Roadmap Notice */}
+                {/* Active Multilingual Support Notice */}
                 <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="mt-auto bg-white rounded-3xl p-6 border border-border-default shadow-card space-y-4"
+                    className="mt-auto bg-white rounded-3xl p-6 border border-emerald-200 shadow-card space-y-4"
                 >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border-default/60 pb-3">
                         <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-dot" />
                             <h3 className="text-sm font-extrabold text-text-primary uppercase tracking-wider">
-                                Expansion Vision — Future Versions
+                                Multilingual Healthcare Engine
                             </h3>
                         </div>
-                        <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full w-fit">
-                            Regional Inclusivity Roadmap
+                        <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 w-fit">
+                            100% Production Ready
                         </span>
                     </div>
 
                     <p className="text-xs text-text-secondary leading-relaxed">
-                        <strong className="text-text-primary">Why regional languages?</strong> India has immense linguistic diversity. People should be able to explain their health problems in the language they are most comfortable with. This makes healthcare more accessible and inclusive.
+                        <strong className="text-text-primary">Speak in your comfortable dialect:</strong> Patients can speak naturally in <strong>Gujarati</strong>, <strong>Hindi</strong>, <strong>Marathi</strong>, <strong>English</strong>, or select <strong>Auto-Detect</strong> to mix languages. CliniQ AI transcribes and synthesizes clinical narratives in real time.
                     </p>
 
-                    <div className="space-y-2">
-                        <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">Upcoming Regional Language Support:</span>
-                        <div className="flex flex-wrap gap-2">
-                            {['Marathi', 'Tamil', 'Telugu', 'Bengali', 'Kannada', 'Malayalam', 'Punjabi', 'Odia', 'Assamese'].map((lang) => (
-                                <span key={lang} className="px-3 py-1 bg-surface rounded-lg border border-border-default text-xs font-semibold text-text-secondary">
-                                    {lang}
-                                </span>
-                            ))}
-                        </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                        {[
+                            { name: '🌐 Auto-Detect', status: 'Multilingual' },
+                            { name: 'ગુ ગુજરાતી', status: 'Active' },
+                            { name: 'हिं हिंदी', status: 'Active' },
+                            { name: 'म मराठी', status: 'Active' },
+                            { name: 'EN English', status: 'Active' },
+                        ].map((item) => (
+                            <span key={item.name} className="px-3 py-1.5 bg-emerald-50 rounded-xl border border-emerald-200 text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                                <span>{item.name}</span>
+                                <span className="text-[10px] bg-emerald-200/60 text-emerald-900 px-1.5 py-0.5 rounded font-mono uppercase">{item.status}</span>
+                            </span>
+                        ))}
                     </div>
                 </motion.div>
             </main>
