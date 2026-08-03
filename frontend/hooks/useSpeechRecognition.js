@@ -1,12 +1,74 @@
-// CliniQ AI — Continuous & Accurate Web Speech API Hook for Voice-to-Text
+// CliniQ AI — Continuous, Mobile-Optimized & Accurate Web Speech API Hook for Voice-to-Text
 'use client';
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 const LANGUAGE_MAP = {
+    'Auto-Detect': '',
+    'auto': '',
     'Gujarati': 'gu-IN',
     'Hindi': 'hi-IN',
     'English': 'en-US',
 };
+
+/**
+ * Clean word repetitions and unwanted artifacts
+ */
+export function deduplicateText(text) {
+    if (!text || typeof text !== 'string') return '';
+
+    let cleaned = text.trim();
+
+    // 1. Remove adjacent duplicate single words (case-insensitive), e.g. "fever fever" -> "fever"
+    cleaned = cleaned.replace(/\b(\w+)\s+\1\b/gi, '$1');
+
+    // 2. Remove adjacent duplicate phrases (3-30 chars), e.g. "headache since 2 days headache since 2 days" -> "headache since 2 days"
+    cleaned = cleaned.replace(/\b([\w\s]{3,30})\s+\1\b/gi, '$1');
+
+    // 3. Collapse multiple spaces
+    cleaned = cleaned.replace(/\s+/g, ' ');
+
+    return cleaned;
+}
+
+/**
+ * Merge existing transcript base with new session speech chunk without duplicating overlapping words
+ */
+export function mergeTranscript(baseText, newSegment) {
+    const base = (baseText || '').trim();
+    const incoming = (newSegment || '').trim();
+
+    if (!base) return deduplicateText(incoming);
+    if (!incoming) return deduplicateText(base);
+
+    // If incoming is already trailing substring of base, return deduplicated base
+    if (base.toLowerCase().endsWith(incoming.toLowerCase())) {
+        return deduplicateText(base);
+    }
+
+    const baseWords = base.split(/\s+/);
+    const incomingWords = incoming.split(/\s+/);
+
+    let maxOverlap = 0;
+    const maxCheck = Math.min(baseWords.length, incomingWords.length);
+
+    for (let len = 1; len <= maxCheck; len++) {
+        const suffix = baseWords.slice(-len).join(' ').toLowerCase();
+        const prefix = incomingWords.slice(0, len).join(' ').toLowerCase();
+        if (suffix === prefix) {
+            maxOverlap = len;
+        }
+    }
+
+    let merged = '';
+    if (maxOverlap > 0) {
+        const newWords = incomingWords.slice(maxOverlap);
+        merged = newWords.length > 0 ? `${base} ${newWords.join(' ')}` : base;
+    } else {
+        merged = `${base} ${incoming}`;
+    }
+
+    return deduplicateText(merged);
+}
 
 export default function useSpeechRecognition(language = 'English') {
     const [transcript, setTranscript] = useState('');
@@ -16,23 +78,51 @@ export default function useSpeechRecognition(language = 'English') {
     const [isSupported, setIsSupported] = useState(false);
 
     const recognitionRef = useRef(null);
+    const mediaStreamRef = useRef(null);
     const shouldListenRef = useRef(false);
     const baseTranscriptRef = useRef('');
     const currentTranscriptRef = useRef('');
 
     useEffect(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SpeechRecognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
         setIsSupported(!!SpeechRecognition);
     }, []);
+
+    // Mobile mic hardware stream warmup
+    const warmupMicrophone = async () => {
+        if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) return true;
+        try {
+            if (!mediaStreamRef.current) {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true,
+                    }
+                });
+                mediaStreamRef.current = stream;
+            }
+            return true;
+        } catch (err) {
+            console.warn('[Speech] Mobile mic stream warmup note:', err);
+            return false;
+        }
+    };
 
     const initRecognition = useCallback(() => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) return null;
 
         const recognition = new SpeechRecognition();
-        const selectedLangCode = LANGUAGE_MAP[language] || 'en-US';
+        const langCode = LANGUAGE_MAP[language];
 
-        recognition.lang = selectedLangCode;
+        // If Auto-Detect or unspecified, default to navigator language or empty for browser auto-detect
+        if (langCode !== undefined && langCode !== '') {
+            recognition.lang = langCode;
+        } else if (typeof navigator !== 'undefined' && navigator.language) {
+            recognition.lang = navigator.language;
+        }
+
         recognition.continuous = true;
         recognition.interimResults = true;
         recognition.maxAlternatives = 1;
@@ -46,8 +136,6 @@ export default function useSpeechRecognition(language = 'English') {
             let sessionFinal = '';
             let sessionInterim = '';
 
-            // Iterate through all results in the current session cleanly
-            // This prevents duplicate appending when onresult triggers repeatedly
             for (let i = 0; i < event.results.length; i++) {
                 const res = event.results[i];
                 if (res.isFinal) {
@@ -57,30 +145,29 @@ export default function useSpeechRecognition(language = 'English') {
                 }
             }
 
-            const combinedFinal = (baseTranscriptRef.current + ' ' + sessionFinal).trim();
+            const combinedFinal = mergeTranscript(baseTranscriptRef.current, sessionFinal);
             currentTranscriptRef.current = combinedFinal;
             setTranscript(combinedFinal);
-            setInterimText(sessionInterim);
+            setInterimText(deduplicateText(sessionInterim));
         };
 
         recognition.onerror = (event) => {
-            // Ignore benign errors during auto-restart
             if (event.error === 'no-speech') {
-                console.log('[Speech] No speech detected in segment, continuing...');
+                console.log('[Speech] Silence detected, session continuing...');
                 return;
             }
             if (event.error === 'aborted') return;
 
             if (event.error === 'audio-capture') {
-                setError('Microphone not found. Please check your microphone settings.');
+                setError('Microphone not found. Please check your device audio settings.');
                 shouldListenRef.current = false;
                 setIsListening(false);
             } else if (event.error === 'not-allowed') {
-                setError('Microphone access denied. Please allow microphone permission.');
+                setError('Microphone permission denied. Please allow microphone access in browser settings.');
                 shouldListenRef.current = false;
                 setIsListening(false);
             } else {
-                console.warn('[Speech] Recognition warning/error:', event.error);
+                console.warn('[Speech] Recognition event notice:', event.error);
             }
         };
 
@@ -89,23 +176,23 @@ export default function useSpeechRecognition(language = 'English') {
             // Save current final text into base before restarting session
             baseTranscriptRef.current = currentTranscriptRef.current;
 
-            // Auto-restart if user did not explicitly click Stop (e.g. mobile auto-timeout)
+            // Mobile Auto-Restart on silence timeout
             if (shouldListenRef.current) {
-                console.log('[Speech] Session ended naturally, auto-restarting continuous recording...');
-                try {
-                    recognition.start();
-                } catch (err) {
-                    console.warn('[Speech] Auto-restart attempt failed, recreating recognition...', err);
-                    setTimeout(() => {
-                        if (shouldListenRef.current) {
+                console.log('[Speech] Mobile auto-restarting continuous recording...');
+                setTimeout(() => {
+                    if (shouldListenRef.current) {
+                        try {
                             const newRec = initRecognition();
                             if (newRec) {
                                 recognitionRef.current = newRec;
-                                try { newRec.start(); } catch (e) {}
+                                newRec.start();
                             }
+                        } catch (err) {
+                            console.warn('[Speech] Auto-restart retry notice:', err);
+                            setIsListening(false);
                         }
-                    }, 300);
-                }
+                    }
+                }, 150);
             } else {
                 setIsListening(false);
             }
@@ -114,21 +201,24 @@ export default function useSpeechRecognition(language = 'English') {
         return recognition;
     }, [language]);
 
-    const startListening = useCallback(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const startListening = useCallback(async (initialText = '') => {
+        const SpeechRecognition = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
         if (!SpeechRecognition) {
-            setError('Speech recognition is not supported in this browser. Please use Chrome.');
+            setError('Speech recognition is not supported in this browser. Please use Chrome or Safari.');
             return;
         }
 
-        // Reset transcript state
         setError(null);
-        baseTranscriptRef.current = '';
-        currentTranscriptRef.current = '';
-        setTranscript('');
+        const cleanedInitial = (initialText || '').trim();
+        baseTranscriptRef.current = cleanedInitial;
+        currentTranscriptRef.current = cleanedInitial;
+        setTranscript(cleanedInitial);
         setInterimText('');
         shouldListenRef.current = true;
+
+        // Warm up mobile mic stream
+        await warmupMicrophone();
 
         if (recognitionRef.current) {
             try { recognitionRef.current.stop(); } catch (e) {}
@@ -141,7 +231,7 @@ export default function useSpeechRecognition(language = 'English') {
                 recognition.start();
             } catch (err) {
                 console.error('[Speech] Start error:', err);
-                setError('Failed to start speech recognition. Please tap record again.');
+                setError('Failed to start microphone. Please tap record button again.');
                 setIsListening(false);
                 shouldListenRef.current = false;
             }
@@ -156,16 +246,27 @@ export default function useSpeechRecognition(language = 'English') {
             } catch (e) {}
             recognitionRef.current = null;
         }
+        if (mediaStreamRef.current) {
+            try {
+                mediaStreamRef.current.getTracks().forEach(track => track.stop());
+            } catch (e) {}
+            mediaStreamRef.current = null;
+        }
         setIsListening(false);
         setInterimText('');
     }, []);
 
-    // Cleanup on unmount
     useEffect(() => {
         return () => {
             shouldListenRef.current = false;
             if (recognitionRef.current) {
                 try { recognitionRef.current.stop(); } catch (e) {}
+            }
+            if (mediaStreamRef.current) {
+                try {
+                    mediaStreamRef.current.getTracks().forEach(track => track.stop());
+                } catch (e) {}
+                mediaStreamRef.current = null;
             }
         };
     }, []);
@@ -181,3 +282,4 @@ export default function useSpeechRecognition(language = 'English') {
         setTranscript,
     };
 }
+

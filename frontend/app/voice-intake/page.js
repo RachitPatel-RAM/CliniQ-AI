@@ -24,16 +24,16 @@ export default function VoiceIntakePage() {
         if (!patient?.name) router.replace('/select-language');
     }, [patient, router]);
 
-    // Sync speech transcript to manual text area cleanly
+    // Sync speech transcript to manual text area cleanly without duplicate stacking
     useEffect(() => {
         if (speech.transcript) {
-            if (store.transcript && !speech.transcript.startsWith(store.transcript)) {
-                setManualText(store.transcript + ' ' + speech.transcript);
-            } else {
-                setManualText(speech.transcript);
-            }
+            setManualText(speech.transcript);
         }
-    }, [speech.transcript, store.transcript]);
+    }, [speech.transcript]);
+
+    const handleStartRecording = () => {
+        speech.startListening(manualText);
+    };
 
     // Cycle through engaging loading status messages while analyzing
     useEffect(() => {
@@ -82,8 +82,12 @@ export default function VoiceIntakePage() {
 
     if (!patient?.name) return null;
 
+    const displayLang = selectedLanguage === 'auto' || selectedLanguage === 'Auto-Detect'
+        ? 'Multilingual Auto-Detect'
+        : selectedLanguage;
+
     const loadingMessages = [
-        { title: 'Listening & Transcribing', desc: 'Processing your voice in ' + selectedLanguage, icon: Activity },
+        { title: 'Listening & Transcribing', desc: 'Processing your voice in ' + displayLang, icon: Activity },
         { title: 'Clinical Extraction', desc: 'Identifying symptoms, duration & medications', icon: Stethoscope },
         { title: 'AI Synthesis Engine', desc: 'Running CliniQ AI clinical intelligence', icon: Sparkles },
         { title: 'Generating Doctor Brief', desc: 'Formatting report for 3-second physician review', icon: ShieldCheck }
@@ -171,7 +175,7 @@ export default function VoiceIntakePage() {
                         {store.transcript ? 'Add or Edit Symptoms' : 'Describe your symptoms'}
                     </h1>
                     <p className="text-sm text-text-secondary">
-                        Speak naturally in <strong className="text-primary">{selectedLanguage}</strong> or type below. We&apos;ll transcribe and synthesize your symptoms into a clinical brief.
+                        Speak naturally in <strong className="text-primary">{displayLang}</strong> or type below. We&apos;ll transcribe and synthesize your symptoms into a clinical brief.
                     </p>
                 </motion.div>
 
@@ -183,7 +187,7 @@ export default function VoiceIntakePage() {
                         </div>
                         <div className="text-sm">
                             <span className="font-bold text-text-primary">{patient.name}</span>
-                            <span className="text-text-muted ml-2">{patient.age}y • {patient.gender} • {selectedLanguage}</span>
+                            <span className="text-text-muted ml-2">{patient.age}y • {patient.gender} • {displayLang}</span>
                         </div>
                     </div>
                     {store.transcript && (
@@ -200,7 +204,7 @@ export default function VoiceIntakePage() {
                         interimText={speech.interimText}
                         error={speech.error}
                         isSupported={speech.isSupported}
-                        onStart={speech.startListening}
+                        onStart={handleStartRecording}
                         onStop={speech.stopListening}
                     />
 
@@ -250,3 +254,4 @@ export default function VoiceIntakePage() {
         </div>
     );
 }
+
