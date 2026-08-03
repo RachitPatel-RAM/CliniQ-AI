@@ -9,6 +9,14 @@ import { analyzeIntake } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Keyboard, Loader2, Sparkles, Activity, ShieldCheck, Stethoscope, PlusCircle } from 'lucide-react';
 
+const QUICK_LANGS = [
+    { name: 'Auto-Detect', label: '🌐 Auto-Detect' },
+    { name: 'Gujarati', label: 'ગુ Gujarati' },
+    { name: 'Hindi', label: 'हिं Hindi' },
+    { name: 'Marathi', label: 'म Marathi' },
+    { name: 'English', label: 'EN English' },
+];
+
 export default function VoiceIntakePage() {
     const router = useRouter();
     const store = useIntakeStore();
@@ -18,6 +26,17 @@ export default function VoiceIntakePage() {
     const [showManual, setShowManual] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loadingStage, setLoadingStage] = useState(0);
+
+    const handleLanguageSwitch = (langName) => {
+        const codeMap = { 'Auto-Detect': 'auto', 'Gujarati': 'gu-IN', 'Hindi': 'hi-IN', 'Marathi': 'mr-IN', 'English': 'en-IN' };
+        store.setLanguage(langName, codeMap[langName] || 'auto');
+        if (speech.isListening) {
+            speech.stopListening();
+            setTimeout(() => {
+                speech.startListening(manualText);
+            }, 200);
+        }
+    };
 
     // Redirect if no patient data
     useEffect(() => {
@@ -199,6 +218,31 @@ export default function VoiceIntakePage() {
 
                 {/* Voice Recorder */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-white rounded-2xl border border-border-default p-6 sm:p-8 shadow-card space-y-6">
+                    {/* Quick Language Selector Pills */}
+                    <div className="flex flex-col items-center gap-2 pb-2 border-b border-border-default/60">
+                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-text-muted">
+                            Recording Language (Tap to Switch):
+                        </span>
+                        <div className="flex flex-wrap items-center justify-center gap-1.5">
+                            {QUICK_LANGS.map((lang) => {
+                                const isActive = selectedLanguage === lang.name || (selectedLanguage === 'auto' && lang.name === 'Auto-Detect');
+                                return (
+                                    <button
+                                        key={lang.name}
+                                        onClick={() => handleLanguageSwitch(lang.name)}
+                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                                            isActive
+                                                ? 'bg-primary text-white shadow-md shadow-primary/25 scale-105'
+                                                : 'bg-surface border border-border-default text-text-secondary hover:border-primary/40 hover:bg-slate-50'
+                                        }`}
+                                    >
+                                        {lang.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
                     <VoiceRecorder
                         isListening={speech.isListening}
                         interimText={speech.interimText}

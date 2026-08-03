@@ -3,11 +3,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
 const LANGUAGE_MAP = {
-    'Auto-Detect': '',
-    'auto': '',
+    'Auto-Detect': 'hi-IN', // Indian Multilingual model on WebSpeech handles Hindi, Marathi, Gujarati & English
+    'auto': 'hi-IN',
     'Gujarati': 'gu-IN',
     'Hindi': 'hi-IN',
-    'English': 'en-US',
+    'Marathi': 'mr-IN',
+    'English': 'en-IN',
 };
 
 /**
@@ -78,7 +79,6 @@ export default function useSpeechRecognition(language = 'English') {
     const [isSupported, setIsSupported] = useState(false);
 
     const recognitionRef = useRef(null);
-    const mediaStreamRef = useRef(null);
     const shouldListenRef = useRef(false);
     const baseTranscriptRef = useRef('');
     const currentTranscriptRef = useRef('');
@@ -88,23 +88,16 @@ export default function useSpeechRecognition(language = 'English') {
         setIsSupported(!!SpeechRecognition);
     }, []);
 
-    // Mobile mic hardware stream warmup
+    // Mobile mic hardware permission check - MUST release track immediately so WebSpeech gets exclusive mic access!
     const warmupMicrophone = async () => {
         if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) return true;
         try {
-            if (!mediaStreamRef.current) {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true,
-                    }
-                });
-                mediaStreamRef.current = stream;
-            }
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // Release track immediately to prevent locking microphone on Android/iOS mobile Chrome
+            stream.getTracks().forEach(track => track.stop());
             return true;
         } catch (err) {
-            console.warn('[Speech] Mobile mic stream warmup note:', err);
+            console.warn('[Speech] Mobile mic permission check note:', err);
             return false;
         }
     };
@@ -114,15 +107,9 @@ export default function useSpeechRecognition(language = 'English') {
         if (!SpeechRecognition) return null;
 
         const recognition = new SpeechRecognition();
-        const langCode = LANGUAGE_MAP[language];
+        const langCode = LANGUAGE_MAP[language] || LANGUAGE_MAP[language?.toLowerCase()] || 'hi-IN';
 
-        // If Auto-Detect or unspecified, default to navigator language or empty for browser auto-detect
-        if (langCode !== undefined && langCode !== '') {
-            recognition.lang = langCode;
-        } else if (typeof navigator !== 'undefined' && navigator.language) {
-            recognition.lang = navigator.language;
-        }
-
+        recognition.lang = langCode;
         recognition.continuous = true;
         recognition.interimResults = true;
         recognition.maxAlternatives = 1;
@@ -246,12 +233,6 @@ export default function useSpeechRecognition(language = 'English') {
             } catch (e) {}
             recognitionRef.current = null;
         }
-        if (mediaStreamRef.current) {
-            try {
-                mediaStreamRef.current.getTracks().forEach(track => track.stop());
-            } catch (e) {}
-            mediaStreamRef.current = null;
-        }
         setIsListening(false);
         setInterimText('');
     }, []);
@@ -261,12 +242,6 @@ export default function useSpeechRecognition(language = 'English') {
             shouldListenRef.current = false;
             if (recognitionRef.current) {
                 try { recognitionRef.current.stop(); } catch (e) {}
-            }
-            if (mediaStreamRef.current) {
-                try {
-                    mediaStreamRef.current.getTracks().forEach(track => track.stop());
-                } catch (e) {}
-                mediaStreamRef.current = null;
             }
         };
     }, []);

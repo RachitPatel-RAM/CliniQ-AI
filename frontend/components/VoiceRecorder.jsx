@@ -63,19 +63,35 @@ export default function VoiceRecorder({ isListening, interimText, error, isSuppo
                 </div>
             </div>
 
-            {/* Recording Banner */}
+            {/* Recording Banner & Sound Visualizer */}
             <AnimatePresence>
                 {isListening && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="bg-emergency-bg border border-emergency-border rounded-xl p-4 flex items-center gap-3"
+                        className="bg-emergency-bg border border-emergency-border rounded-xl p-4 flex flex-col gap-2"
                     >
-                        <span className="w-3 h-3 bg-emergency rounded-full animate-pulse-dot shrink-0" />
-                        <span className="text-sm font-semibold text-emergency">
-                            Microphone active — speak naturally
-                        </span>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <span className="w-3 h-3 bg-emergency rounded-full animate-pulse-dot shrink-0" />
+                                <span className="text-sm font-bold text-emergency">
+                                    Microphone Active — Speak Naturally
+                                </span>
+                            </div>
+                            {/* Live Soundwave Bar Animation */}
+                            <div className="flex items-center gap-1 h-4">
+                                <span className="w-1 bg-emergency rounded-full animate-bounce h-3" style={{ animationDelay: '0.1s' }} />
+                                <span className="w-1 bg-emergency rounded-full animate-bounce h-5" style={{ animationDelay: '0.3s' }} />
+                                <span className="w-1 bg-emergency rounded-full animate-bounce h-2" style={{ animationDelay: '0.2s' }} />
+                                <span className="w-1 bg-emergency rounded-full animate-bounce h-4" style={{ animationDelay: '0.4s' }} />
+                            </div>
+                        </div>
+                        {seconds >= 3 && (
+                            <p className="text-xs text-emergency/80 font-medium pt-1 border-t border-emergency-border/50">
+                                💡 Tip: Speak close to your mobile microphone. If your words don&apos;t appear, tap <strong>Hindi (हिं)</strong> or <strong>Marathi (म)</strong> in the language buttons above.
+                            </p>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

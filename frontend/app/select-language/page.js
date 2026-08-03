@@ -6,10 +6,11 @@ import useIntakeStore from '@/hooks/useIntakeStore';
 import { motion } from 'framer-motion';
 
 const LANGUAGES = [
-    { language: 'Auto-Detect', code: 'auto', script: '🌐', nativeText: 'Auto-Detect (Gujarati, Hindi, English)', description: 'Multilingual Smart Detection', color: 'bg-purple-100 text-purple-700' },
+    { language: 'Auto-Detect', code: 'auto', script: '🌐', nativeText: 'Auto-Detect (Gujarati, Hindi, Marathi, English)', description: 'Multilingual Smart Detection', color: 'bg-purple-100 text-purple-700' },
     { language: 'Gujarati', code: 'gu-IN', script: 'ગુ', nativeText: 'ગુજરાતીમાં વાતચીત શરૂ કરો', description: 'Regional Dialect', color: 'bg-emerald-100 text-emerald-700' },
     { language: 'Hindi', code: 'hi-IN', script: 'हिं', nativeText: 'हिंदी में विवरण दें', description: 'National Language', color: 'bg-amber-100 text-amber-700' },
-    { language: 'English', code: 'en-US', script: 'EN', nativeText: 'Standard intake in English', description: 'International Standard', color: 'bg-blue-100 text-blue-700' },
+    { language: 'Marathi', code: 'mr-IN', script: 'म', nativeText: 'मराठीत माहिती द्या', description: 'Regional Language', color: 'bg-rose-100 text-rose-700' },
+    { language: 'English', code: 'en-IN', script: 'EN', nativeText: 'Standard intake in English', description: 'International Standard', color: 'bg-blue-100 text-blue-700' },
 ];
 
 export default function SelectLanguagePage() {
@@ -55,12 +56,12 @@ export default function SelectLanguagePage() {
                         Select your consultation language
                     </h1>
                     <p className="text-sm text-text-secondary">
-                        Choose your preferred language or select <strong>Auto-Detect</strong> to speak freely in Gujarati, Hindi, or English.
+                        Choose your preferred language or select <strong>Auto-Detect</strong> to speak freely in Gujarati, Hindi, Marathi, or English.
                     </p>
                 </motion.div>
 
                 {/* Language Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-12">
                     {LANGUAGES.map((lang, i) => (
                         <LanguageCard
                             key={lang.language}
